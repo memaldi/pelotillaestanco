@@ -33,7 +33,6 @@ class MainHandler(webapp2.RequestHandler):
     	if user:
             # Crear el perfil si no existe
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
-            print usuario
             if usuario == None:
                 usuario = Usuario(user_id=user.user_id(), email=user.email(), nick=user.nickname(), activo=False, admin=False)
                 usuario.put()
@@ -43,12 +42,23 @@ class MainHandler(webapp2.RequestHandler):
                 self.response.write(template.render(content))
                 return 
                 
+            content = {}
+            if usuario.admin:
+                print usuario.admin
+                content['admin'] = True
             template = JINJA_ENVIRONMENT.get_template('templates/main.html')
-            self.response.write(template.render())
+            self.response.write(template.render(content))
             return 
         else:
     		self.redirect(users.create_login_url(self.request.uri))
 
+class Admin(webapp2.RequestHandler):
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('templates/panel-admin.html')
+        self.response.write(template.render())
+        return 
+
 app = webapp2.WSGIApplication([
+    ('/admin', Admin),
     ('/', MainHandler)
 ], debug=True)
