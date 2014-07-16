@@ -1,57 +1,61 @@
-from google.appengine.ext import ndb
+from google.appengine.ext import db
 from google.appengine.api import users
 
-class Usuario(ndb.Model):
-	user = ndb.UserProperty()
-	admin = ndb.BooleanProperty()
+class Usuario(db.Model):
+	#user = db.UserProperty()
+	user_id = db.StringProperty()
+	email = db.EmailProperty()
+	nick = db.StringProperty()
+	admin = db.BooleanProperty()
+	activo = db.BooleanProperty()
 
-class Equipo(ndb.Model):
-	nombre = ndb.StringProperty()
-	lfp = ndb.BooleanProperty()
-	champions = ndb.BooleanProperty()
-	uefa = ndb.BooleanProperty()
+class Equipo(db.Model):
+	nombre = db.StringProperty()
+	lfp = db.BooleanProperty()
+	champions = db.BooleanProperty()
+	uefa = db.BooleanProperty()
 
-class Jornada(ndb.Model):
-	numero = ndb.IntegerProperty()
-	fecha = ndb.DateProperty()
-	fecha_limite = ndb.DateTimeProperty()
+class Jornada(db.Model):
+	numero = db.IntegerProperty()
+	fecha = db.DateProperty()
+	fecha_limite = db.DateTimeProperty()
 
-class Partido(ndb.Model):
-	local = ndb.ReferenceProperty(reference_class=Equipo)
-	visitante = ndb.ReferenceProperty(reference_class=Equipo)
-	jornada = ndb.ReferenceProperty(reference_class=Jornada)
+class Partido(db.Model):
+	local = db.ReferenceProperty(reference_class=Equipo, collection_name='local')
+	visitante = db.ReferenceProperty(reference_class=Equipo, collection_name='visitante')
+	jornada = db.ReferenceProperty(reference_class=Jornada)
 
-class GolesPartidoEquipo(ndb.Model):
-	equipo = ndb.ReferenceProperty(reference_class=Equipo)
-	partido = ndb.ReferenceProperty(reference_class=Partido)
-	goles = ndb.IntegerProperty()
+class GolesPartidoEquipo(db.Model):
+	equipo = db.ReferenceProperty(reference_class=Equipo)
+	partido = db.ReferenceProperty(reference_class=Partido)
+	goles = db.IntegerProperty()
 
-class Jugador(ndb.Model):
-	nombre = ndb.StringProperty()
-	demarcacion = ndb.StringProperty()
+class Jugador(db.Model):
+	nombre = db.StringProperty()
+	demarcacion = db.StringProperty()
 
-class PronosticoJornada(ndb.Model):
-	jornada = ndb.ReferenceProperty(reference_class=Jornada)
-	usuario = ndb.ReferenceProperty(reference_class=Usuario)
+class PronosticoJornada(db.Model):
+	jornada = db.ReferenceProperty(reference_class=Jornada)
+	usuario = db.ReferenceProperty(reference_class=Usuario)
 
-class PronosticoPartido(ndb.Model):
-	partido = ndb.ReferenceProperty(reference_class=Partido)
-	goles_local = ndb.IntegerProperty()
-	goles_visitante = ndb.IntegerProperty()
-	pronostico_jornada = ndb.ReferenceProperty(reference_class=PronosticoJornada)
+class PronosticoPartido(db.Model):
+	partido = db.ReferenceProperty(reference_class=Partido)
+	goles_local = db.IntegerProperty()
+	goles_visitante = db.IntegerProperty()
+	pronostico_jornada = db.ReferenceProperty(reference_class=PronosticoJornada)
 
-class PronosticoJugador(ndb.Model):
-	pronostico_jornada = ndb.ReferenceProperty(reference_class=PronosticoJornada)
-	jugador = ndb.ReferenceProperty(reference_class=Jugador)
-	goles =ndb.IntegerProperty()
+class PronosticoJugador(db.Model):
+	pronostico_jornada = db.ReferenceProperty(reference_class=PronosticoJornada)
+	jugador = db.ReferenceProperty(reference_class=Jugador)
+	goles =db.IntegerProperty()
 
-class PronosticoGlobal(ndb.Model):
-	campeon_invierno = ndb.ReferenceProperty(reference_class=Equipo)
-	campeon_copa = ndb.ReferenceProperty(reference_class=Equipo)
-	campeon_liga = ndb.ReferenceProperty(reference_class=Equipo)
-	puesto_champions = ndb.ReferenceProperty(reference_class=Equipo)
-	puestos_uefa = ndb.ListProperty(ndb.Key)
-	puestos_descenso = ndb.ListProperty(ndb.Key)
-	zamora = ndb.ReferenceProperty(reference_class=Jugador)
-	campeon_champions = ndb.ReferenceProperty(reference_class=Equipo)
-	campeon_uefa = ndb.ReferenceProperty(reference_class=Equipo)
+class PronosticoGlobal(db.Model):
+	campeon_invierno = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_invierno')
+	campeon_copa = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_copa')
+	campeon_liga = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_liga')
+	puesto_champions = db.ReferenceProperty(reference_class=Equipo, collection_name='puesto_champions')
+	puestos_uefa = db.ListProperty(db.Key)
+	puestos_descenso = db.ListProperty(db.Key)
+	zamora = db.ReferenceProperty(reference_class=Jugador, collection_name='zamora')
+	campeon_champions = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_champions')
+	campeon_uefa = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_uefa')

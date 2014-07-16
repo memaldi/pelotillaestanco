@@ -15,6 +15,9 @@
 # limitations under the License.
 #
 from google.appengine.api import users
+from model import Usuario
+from google.appengine.ext import ndb
+
 import webapp2
 import jinja2
 import os
@@ -27,10 +30,22 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class MainHandler(webapp2.RequestHandler):
     def get(self):
     	user = users.get_current_user()
-    	print user
     	if user:
+            # Crear el perfil si no existe
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            print usuario
+            if usuario == None:
+                usuario = Usuario(user_id=user.user_id(), email=user.email(), nick=user.nickname(), activo=False, admin=False)
+                usuario.put()
+            if not usuario.activo:
+                template = JINJA_ENVIRONMENT.get_template('templates/espera.html')
+                content = {'nick': usuario.nick, 'email': usuario.email}
+                self.response.write(template.render(content))
+                return 
+                
             template = JINJA_ENVIRONMENT.get_template('templates/main.html')
             self.response.write(template.render())
+            return 
         else:
     		self.redirect(users.create_login_url(self.request.uri))
 
