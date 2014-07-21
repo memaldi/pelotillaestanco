@@ -54,11 +54,30 @@ class MainHandler(webapp2.RequestHandler):
 
 class Admin(webapp2.RequestHandler):
     def get(self):
-        template = JINJA_ENVIRONMENT.get_template('templates/panel-admin.html')
-        self.response.write(template.render())
-        return 
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    template = JINJA_ENVIRONMENT.get_template('templates/panel-admin.html')
+                    self.response.write(template.render())
+                    return 
+        self.redirect('/')
+
+class Equipos(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    template = JINJA_ENVIRONMENT.get_template('templates/panel-equipos.html')
+                    self.response.write(template.render())
+                    return 
+        self.redirect('/')
 
 app = webapp2.WSGIApplication([
+    ('/admin/equipos', Equipos),
     ('/admin', Admin),
     ('/', MainHandler)
 ], debug=True)

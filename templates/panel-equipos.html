@@ -1,0 +1,25 @@
+{% extends "templates/panel-admin.html" %}
+{% block page_title %}Equipos{% endblock %}
+{% block admin_content %}
+
+<div class="btn-toolbar" role="toolbar">
+  <div class="btn-group"><a class="btn btn-default" href="/admin/crearequipo" role="button"><span class="glyphicon glyphicon-plus"></span> Nuevo jugador</a></div>
+  <div class="btn-group"><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span> Eliminar Jugador(es)</button></div>
+</div>
+
+<table class="table table-striped">
+	<thead>
+  		<th>
+  			<tr>
+	  			<th></th>
+	  			<th>Nombre</th>
+	  			<th>Equipo</th>
+	  			<th></th>
+	  		</tr>
+  		</th>
+  	</thead>
+  	<tbody>
+  	</tbody>
+</table>
+
+{% endblock %}
