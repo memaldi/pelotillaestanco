@@ -3,22 +3,34 @@
 {% block admin_content %}
 
 <div class="btn-toolbar" role="toolbar">
-  <div class="btn-group"><a class="btn btn-default" href="/admin/crearequipo" role="button"><span class="glyphicon glyphicon-plus"></span> Nuevo jugador</a></div>
-  <div class="btn-group"><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span> Eliminar Jugador(es)</button></div>
+  <div class="btn-group"><a class="btn btn-default" href="/admin/equipos/nuevo" role="button"><span class="glyphicon glyphicon-plus"></span> Nuevo Equipo</a></div>
+  <div class="btn-group"><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span> Eliminar Equipo(s)</button></div>
 </div>
-
+<br />
 <table class="table table-striped">
 	<thead>
-  		<th>
   			<tr>
 	  			<th></th>
-	  			<th>Nombre</th>
 	  			<th>Equipo</th>
+          <th>LFP</th>
+          <th>Champions</th>
+          <th>Uefa</th>
 	  			<th></th>
+          <th></th>
 	  		</tr>
-  		</th>
   	</thead>
   	<tbody>
+      {% for equipo in equipos%}
+        <tr>
+          <td></td>
+          <td>{{equipo.nombre}}</td>
+          <td>{% if equipo.lfp %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+          <td>{% if equipo.champions %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+          <td>{% if equipo.uefa %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
+          <td><a class="btn btn-default" href="/admin/equipos/nuevo?key={{equipo.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
+          <td><a class="btn btn-default" href="/admin/equipos/borrar?key={{equipo.key()}}" role="button"><span class="glyphicon glyphicon-trash"></span></a></td>
+        </tr>
+      {% endfor %}
   	</tbody>
 </table>
 

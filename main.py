@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario
-from google.appengine.ext import ndb
+from model import Usuario, Equipo
+from google.appengine.ext import db
 
 import webapp2
 import jinja2
@@ -71,12 +71,70 @@ class Equipos(webapp2.RequestHandler):
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
                 if usuario.admin:
+                    equipos = Equipo.all()
+                    equipos_list = []
+                    for equipo in equipos:
+                        print equipo.key()
+                        equipos_list.append(equipo)
+                    content = {'equipos': equipos_list}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-equipos.html')
-                    self.response.write(template.render())
+                    self.response.write(template.render(content))
                     return 
         self.redirect('/')
 
+class FichaEquipo(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    template = JINJA_ENVIRONMENT.get_template('templates/equipo.html')
+                    key = self.request.get('key')
+                    if key != '':
+                        equipo = Equipo.get(key)
+                        content = {'equipo': equipo}
+                        self.response.write(template.render(content))
+                    else:
+                        self.response.write(template.render())
+                    return 
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    print self.request.get('key')
+                    
+                    nombre = self.request.get('nombre')
+                    lfp = False
+                    uefa = False
+                    champions = False
+                    if self.request.get('lfp'):
+                        lfp = True
+                    if self.request.get('champions'):
+                        champions = True
+                    if self.request.get('uefa'):
+                        uefa = True
+                    if self.request.get('key') == '':
+                        equipo = Equipo(nombre=nombre, lfp=lfp, champions=champions, uefa=uefa)
+                        equipo.put()
+                    else:
+                        equipo = Equipo.get(self.request.get('key'))
+                        equipo.nombre = nombre
+                        equipo.lfp = lfp
+                        equipo.champions = champions
+                        equipo.uefa = uefa
+                        db.put(equipo)
+      
+                    self.redirect('/admin/equipos')
+                    return
+        self.redirect('/')
+
 app = webapp2.WSGIApplication([
+    ('/admin/equipos/nuevo', FichaEquipo),
     ('/admin/equipos', Equipos),
     ('/admin', Admin),
     ('/', MainHandler)

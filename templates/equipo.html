@@ -1,0 +1,70 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+	{% if equipo_nombre %}
+		Editar {{ equipo_nombre }}
+	{% else %}
+		Nuevo equipo
+	{% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+	<div class="well">
+		<form class="form-horizontal" role="form" action="/admin/equipos/nuevo" method="post" onsubmit="return validateForm()">
+			<div class="form-group" id="nombre-group">
+				<label for="nombre" class="col-sm-2 control-label">Nombre</label>
+				<div class="col-sm-5">
+				  <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del equipo" {% if equipo %} value="{{equipo.nombre}}" {% endif %}>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <div class="checkbox">
+				    <label>
+				      <input type="checkbox" name="lfp" {% if equipo %} {% if equipo.lfp %} checked {% endif %} {% else %}checked{% endif %}> Juega en la LFP
+				    </label>
+				  </div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <div class="checkbox">
+				    <label>
+				      <input type="checkbox" name="champions" {% if equipo %} {% if equipo.champions %} checked {% endif %} {% endif %}> Juega la Champions League
+				    </label>
+				  </div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <div class="checkbox">
+				    <label>
+				      <input type="checkbox" name="uefa" {% if equipo %} {% if equipo.uefa %} checked {% endif %} {% endif %}> Juega la UEFA League
+				    </label>
+				  </div>
+				</div>
+			</div>
+			{% if equipo %}
+			<input type="hidden" name="key" value="{{equipo.key()}}">
+			{% endif%}
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <button type="submit" class="btn btn-default">Guardar</button>
+				</div>
+			</div>
+		</form>
+		<div class="alert alert-danger" role="alert" hidden="true" id="alert">Debes insertar el nombre del equipo</div>
+	</div>
+{% endblock %}
+{% block scripts %}
+	<script>
+		function validateForm() {
+			var valor = $("#nombre").val();
+			if (valor == "") {
+				$("#nombre-group").attr('class', 'form-group has-error');
+				$("#alert").attr('hidden', false);
+				return false;
+			}
+		}
+	</script>	    
+{% endblock%}
