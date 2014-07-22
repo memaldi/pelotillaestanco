@@ -133,7 +133,22 @@ class FichaEquipo(webapp2.RequestHandler):
                     return
         self.redirect('/')
 
+class BorrarEquipo(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    key = self.request.get('key')
+                    equipo = Equipo.get(key)
+                    db.delete(equipo)
+                    self.redirect('/admin/equipos')
+                    return
+        self.redirect('/')
+
 app = webapp2.WSGIApplication([
+    ('/admin/equipos/borrar', BorrarEquipo),
     ('/admin/equipos/nuevo', FichaEquipo),
     ('/admin/equipos', Equipos),
     ('/admin', Admin),
