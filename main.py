@@ -74,12 +74,27 @@ class Equipos(webapp2.RequestHandler):
                     equipos = Equipo.all()
                     equipos_list = []
                     for equipo in equipos:
-                        print equipo.key()
                         equipos_list.append(equipo)
                     content = {'equipos': equipos_list}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-equipos.html')
                     self.response.write(template.render(content))
                     return 
+        self.redirect('/')
+
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    keys = self.request.arguments()
+                    for key in keys:
+                        equipo = Equipo.get(key)
+                        db.delete(equipo)
+                    self.redirect('/admin/equipos')
+                    return
+                    
         self.redirect('/')
 
 class FichaEquipo(webapp2.RequestHandler):

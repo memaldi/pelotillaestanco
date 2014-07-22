@@ -4,10 +4,10 @@
 
 <div class="btn-toolbar" role="toolbar">
   <div class="btn-group"><a class="btn btn-default" href="/admin/equipos/nuevo" role="button"><span class="glyphicon glyphicon-plus"></span> Nuevo Equipo</a></div>
-  <div class="btn-group"><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span> Eliminar Equipo(s)</button></div>
+  <div class="btn-group"><button type="button" class="btn btn-default" onclick="borrarEquipos()"><span class="glyphicon glyphicon-trash"></span> Eliminar Equipo(s)</button></div>
 </div>
 <br />
-<table class="table table-striped">
+<table class="table table-striped" id="table">
 	<thead>
   			<tr>
 	  			<th></th>
@@ -22,7 +22,7 @@
   	<tbody>
       {% for equipo in equipos%}
         <tr>
-          <td></td>
+          <td><input type="checkbox" class="checkboxEquipo" name="{{equipo.key()}}"></td>
           <td>{{equipo.nombre}}</td>
           <td>{% if equipo.lfp %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
           <td>{% if equipo.champions %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
@@ -56,13 +56,23 @@
 
 {% block scripts %}
 <script>
-    $(document).ready(function(){
-   $("#trash-link").click(function(){ // Click to only happen on announce links
-     //$("#cafeId").val($(this).data('id'));
-     var id = $(this).data('id');
-     $("#accept-button").attr('href', '/admin/equipos/borrar?key=' + $(this).data('id'));
-     //$('#myModal').modal('show');
-   });
-}); 
+  $(document).ready(function(){
+    $("#trash-link").click(function(){ // Click to only happen on announce links
+      var id = $(this).data('id');
+      $("#accept-button").attr('href', '/admin/equipos/borrar?key=' + $(this).data('id'));
+    });
+  }); 
+
+  function borrarEquipos() {
+    var checkboxList = $(".checkboxEquipo");
+    var data = {};
+    checkboxList.each(function(){
+      var checkbox = this;
+      if (checkbox.checked) {
+        data[checkbox.name] = "true";
+      }
+    });
+    $.post("/admin/equipos", data);
+  }
 </script>
 {% endblock %}
