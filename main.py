@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo
+from model import Usuario, Equipo, Jugador
 from google.appengine.ext import db
 
 import webapp2
@@ -64,6 +64,100 @@ class Admin(webapp2.RequestHandler):
                     return 
         self.redirect('/')
 
+class Jugadores(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    jugadores = Jugador.all()
+                    jugadores_list = []
+                    for jugador in jugadores:
+                        jugadores_list.append(jugador)
+                    content = {'jugadores': jugadores_list}
+                    template = JINJA_ENVIRONMENT.get_template('templates/panel-jugadores.html')
+                    self.response.write(template.render(content))
+                    return 
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    keys = self.request.arguments()
+                    for key in keys:
+                        jugador = Jugador.get(key)
+                        db.delete(jugador)
+                    self.redirect('/admin/jugadores')
+                    return
+
+        self.redirect('/')
+
+class FichaJugador(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    template = JINJA_ENVIRONMENT.get_template('templates/jugador.html')
+                    key = self.request.get('key')
+                    content = {}
+                    equipos = Equipo.all()
+                    equipos_list = []
+                    for equipo in equipos:
+                        equipos_list.append(equipo)
+                    content['equipos'] = equipos_list
+                    if key != '':
+                        jugador = Jugador.get(key)
+                        content['jugador'] = jugador
+                        self.response.write(template.render(content))
+                    else:
+                        self.response.write(template.render(content))
+                    return 
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    nombre = self.request.get('nombre')
+                    demarcacion = self.request.get('demarcacion')
+                    equipo = Equipo.get(self.request.get('equipo'))
+                    
+                    if self.request.get('key') == '':
+                        jugador = Jugador(nombre=nombre, demarcacion=demarcacion, equipo=equipo)
+                        jugador.put()
+                    else:
+                        jugador = Jugador.get(self.request.get('key'))
+                        jugador.nombre = nombre
+                        jugador.demarcacion = demarcacion
+                        jugador.equipo = equipo
+                        db.put(jugador)
+      
+                    self.redirect('/admin/jugadores')
+                    return
+        self.redirect('/')
+
+class BorrarJugador(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    key = self.request.get('key')
+                    jugador = Jugador.get(key)
+                    db.delete(jugador)
+                    self.redirect('/admin/jugadores')
+                    return
+        self.redirect('/')
+
 class Equipos(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -94,7 +188,7 @@ class Equipos(webapp2.RequestHandler):
                         db.delete(equipo)
                     self.redirect('/admin/equipos')
                     return
-                    
+
         self.redirect('/')
 
 class FichaEquipo(webapp2.RequestHandler):
@@ -163,6 +257,9 @@ class BorrarEquipo(webapp2.RequestHandler):
         self.redirect('/')
 
 app = webapp2.WSGIApplication([
+    ('/admin/jugadores/borrar', BorrarJugador),
+    ('/admin/jugadores/nuevo', FichaJugador),
+    ('/admin/jugadores', Jugadores),
     ('/admin/equipos/borrar', BorrarEquipo),
     ('/admin/equipos/nuevo', FichaEquipo),
     ('/admin/equipos', Equipos),

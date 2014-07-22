@@ -1,0 +1,64 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+	{% if equipo_nombre %}
+		Editar {{ equipo_nombre }}
+	{% else %}
+		Nuevo equipo
+	{% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+	<div class="well">
+		<form class="form-horizontal" role="form" action="/admin/jugadores/nuevo" method="post" onsubmit="return validateForm()">
+			<div class="form-group" id="nombre-group">
+				<label for="nombre" class="col-sm-2 control-label">Nombre</label>
+				<div class="col-sm-5">
+				  <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Nombre del jugador" {% if jugador %} value="{{jugador.nombre}}" {% endif %}>
+				</div>
+			</div>
+			<div class="form-group" id="demarcacion-group">
+				<label for="demarcacion" class="col-sm-2 control-label">Demarcación</label>
+				<div class="col-sm-5">
+					<select class="form-control" name="demarcacion">
+					  <option value="Delantero" {% if jugador %} {% if jugador.demarcacion == "Delantero"%} selected{% endif %} {% endif %}>Delantero</option>
+					  <option value="Centrocampista" {% if jugador %} {% if jugador.demarcacion == "Centrocampista"%} selected{% endif %} {% endif %}>Centrocampista</option>
+					  <option value="Defensa" {% if jugador %} {% if jugador.demarcacion == "Defensa"%} selected{% endif %} {% endif %}>Defensa</option>
+					  <option value="Portero" {% if jugador %} {% if jugador.demarcacion == "Portero"%} selected{% endif %} {% endif %}>Portero</option>
+					</select>
+				</div>
+			</div>
+			<div class="form-group" id="equipo-group">
+				<label for="demarcacion" class="col-sm-2 control-label">Equipo</label>
+				<div class="col-sm-5">
+					<select class="form-control" name="equipo">
+					  {% for equipo in equipos %}
+					  	<option value="{{equipo.key()}}" {% if jugador %} {% if jugador.equipo.key() == equipo.key()%} selected{% endif %} {% endif %}>{{equipo.nombre}}</option>
+					  {% endfor %}
+					</select>
+				</div>
+			</div>
+			{% if jugador %}
+			<input type="hidden" name="key" value="{{jugador.key()}}">
+			{% endif%}
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <button type="submit" class="btn btn-default">Guardar</button>
+				</div>
+			</div>
+		</form>
+		<div class="alert alert-danger" role="alert" hidden="true" id="alert-name">Debes insertar el nombre del jugador</div>	
+	</div>
+{% endblock %}
+{% block scripts %}
+	<script>
+		function validateForm() {
+			var valor = $("#nombre").val();
+			if (valor == "") {
+				$("#nombre-group").attr('class', 'form-group has-error');
+				$("#alert").attr('hidden', false);
+				return false;
+			}
+		}
+	</script>	    
+{% endblock%}

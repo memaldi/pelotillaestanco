@@ -33,6 +33,7 @@ class GolesPartidoEquipo(db.Model):
 class Jugador(db.Model):
 	nombre = db.StringProperty()
 	demarcacion = db.StringProperty()
+	equipo = db.ReferenceProperty(reference_class=Equipo)
 
 class PronosticoJornada(db.Model):
 	jornada = db.ReferenceProperty(reference_class=Jornada)

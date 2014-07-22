@@ -1,0 +1,76 @@
+{% extends "templates/panel-admin.html" %}
+{% block page_title %}Equipos{% endblock %}
+{% block admin_content %}
+
+<div class="btn-toolbar" role="toolbar">
+  <div class="btn-group"><a class="btn btn-default" href="/admin/jugadores/nuevo" role="button"><span class="glyphicon glyphicon-plus"></span> Nuevo Jugador</a></div>
+  <div class="btn-group"><button type="button" class="btn btn-default" onclick="borrarJugadores()"><span class="glyphicon glyphicon-trash"></span> Eliminar Jugador(es)</button></div>
+</div>
+<br />
+<table class="table table-striped" id="table">
+	<thead>
+  			<tr>
+	  			<th></th>
+	  			<th>Nombre</th>
+          <th>Demarcación</th>
+          <th>Equipo</th>
+	  			<th></th>
+          <th></th>
+	  		</tr>
+  	</thead>
+  	<tbody>
+      {% for jugador in jugadores%}
+        <tr>
+          <td><input type="checkbox" class="checkboxJugadores" name="{{jugador.key()}}"></td>
+          <td>{{jugador.nombre}}</td>
+          <td>{{jugador.demarcacion}}</td>
+          <td>{{jugador.equipo.nombre}}</td>
+          <td><a class="btn btn-default" href="/admin/jugadores/nuevo?key={{jugador.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
+          <td><button type="button" class="btn btn-default" data-toggle="modal" id="trash-link" data-id="{{jugador.key()}}" data-target="#myModal"><span class="glyphicon glyphicon-trash"></span></button></td>
+        </tr>
+      {% endfor %}
+  	</tbody>
+</table>
+
+<div class="modal fade" id="myModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title">Borrar equipo</h4>
+      </div>
+      <div class="modal-body">
+        <p>¿Deseas borrar este equipo?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+        <a class="btn btn-danger" id="accept-button" role="button">Sí, deseo borrarlo</a>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function(){
+    $("#trash-link").click(function(){ // Click to only happen on announce links
+      var id = $(this).data('id');
+      $("#accept-button").attr('href', '/admin/jugadores/borrar?key=' + $(this).data('id'));
+    });
+  }); 
+
+  function borrarJugadores() {
+    var checkboxList = $(".checkboxJugadores");
+    var data = {};
+    checkboxList.each(function(){
+      var checkbox = this;
+      if (checkbox.checked) {
+        data[checkbox.name] = "true";
+      }
+    });
+    $.post("/admin/jugadores", data);
+  }
+</script>
+{% endblock %}
