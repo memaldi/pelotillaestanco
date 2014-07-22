@@ -10,7 +10,7 @@
 <table class="table table-striped" id="table">
 	<thead>
   			<tr>
-	  			<th></th>
+	  			<th><input type="checkbox" id="select-all" onclick="selectAll()"></th>
 	  			<th>Nombre</th>
           <th>Demarcación</th>
           <th>Equipo</th>
@@ -21,7 +21,7 @@
   	<tbody>
       {% for jugador in jugadores%}
         <tr>
-          <td><input type="checkbox" class="checkboxJugadores" name="{{jugador.key()}}"></td>
+          <td><input type="checkbox" class="checkboxJugadores" name="{{jugador.key()}}" id="check-{{jugador.key()}}"></td>
           <td>{{jugador.nombre}}</td>
           <td>{{jugador.demarcacion}}</td>
           <td>{{jugador.equipo.nombre}}</td>
@@ -71,6 +71,15 @@
       }
     });
     $.post("/admin/jugadores", data);
+  }
+
+  function selectAll() {
+    var checkboxList = $(".checkboxJugadores");
+    var status = $("#select-all")[0].checked;
+    checkboxList.each(function() {
+      var id = this.id;   
+      $("#" + id).prop('checked', status);
+    });
   }
 </script>
 {% endblock %}
