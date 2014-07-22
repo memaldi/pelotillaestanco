@@ -10,7 +10,7 @@
 <table class="table table-striped" id="table">
 	<thead>
   			<tr>
-	  			<th></th>
+	  			<th><input type="checkbox" id="select-all" onclick="selectAll()"></th>
 	  			<th>Equipo</th>
           <th>LFP</th>
           <th>Champions</th>
@@ -22,7 +22,7 @@
   	<tbody>
       {% for equipo in equipos%}
         <tr>
-          <td><input type="checkbox" class="checkboxEquipo" name="{{equipo.key()}}"></td>
+          <td><input type="checkbox" class="checkboxEquipo" name="{{equipo.key()}}" id="check-{{equipo.key()}}"></td>
           <td>{{equipo.nombre}}</td>
           <td>{% if equipo.lfp %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
           <td>{% if equipo.champions %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
@@ -73,6 +73,15 @@
       }
     });
     $.post("/admin/equipos", data);
+  }
+
+    function selectAll() {
+    var checkboxList = $(".checkboxEquipo");
+    var status = $("#select-all")[0].checked;
+    checkboxList.each(function() {
+      var id = this.id;   
+      $("#" + id).prop('checked', status);
+    });
   }
 </script>
 {% endblock %}
