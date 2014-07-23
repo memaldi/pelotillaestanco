@@ -185,6 +185,8 @@ class Equipos(webapp2.RequestHandler):
                     keys = self.request.arguments()
                     for key in keys:
                         equipo = Equipo.get(key)
+                        for jugador in equipo.jugador_set:
+                            db.delete(jugador)
                         db.delete(equipo)
                     self.redirect('/admin/equipos')
                     return
@@ -251,6 +253,8 @@ class BorrarEquipo(webapp2.RequestHandler):
                 if usuario.admin:
                     key = self.request.get('key')
                     equipo = Equipo.get(key)
+                    for jugador in equipo.jugador_set:
+                            db.delete(jugador)
                     db.delete(equipo)
                     self.redirect('/admin/equipos')
                     return
