@@ -1,0 +1,89 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+	{% if equipo_nombre %}
+		Editar {{ equipo_nombre }}
+	{% else %}
+		Nuevo equipo
+	{% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+	<div class="well">
+		<form class="form-horizontal" role="form" action="/admin/jornadas/nuevo" method="post" onsubmit="return validateForm()">
+			<div class="form-group" id="nombre-group">
+				<label for="nombre" class="col-sm-2 control-label">Número de la jornada</label>
+				<div class="col-sm-3">
+				  <input type="number" class="form-control" id="numero" name="numero" min="1"{% if jornada %} value="{{jornada.numero}}" {% endif %}>
+				</div>
+			</div>
+			<div class="form-group" id="fecha-group">
+				<label for="fecha" class="col-sm-2 control-label">Fecha y hora de inicio</label>
+				<div class="col-sm-3">
+				  <input type="datetime-local" class="form-control" id="fecha" name="fecha"{% if jornada %} value="{{jornada.fecha_inicio}}" {% endif %}>
+				</div>
+			</div>
+
+			<h2>Partidos</h2>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Local</th>
+						<th>Goles Local</th>
+						<th></th>
+						<th>Goles Visitante</th>
+						<th>Visitante</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in rango %}
+					<tr>
+						<td>
+							<select class="form-control">
+							  {% for equipo in equipos %}
+							  	<option>{{equipo.nombre}}</option>
+							  {% endfor %}
+							</select>
+						</td>
+						<td>
+							<input type="number" min="0" class="form-control" placeholder="Goles Local">
+						</td>
+						<td>-</td>
+						<td>
+							<input type="number" min="0" class="form-control" placeholder="Goles Local">
+						</td>
+						<td>
+							<select class="form-control">
+							  {% for equipo in equipos %}
+							  	<option>{{equipo.nombre}}</option>
+							  {% endfor %}
+							</select>
+						</td>
+					</tr>
+					{% endfor%}
+				</tbody>
+			</table>
+			{% if jornada %}
+			<input type="hidden" name="key" value="{{jornada.key()}}">
+			{% endif%}
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <button type="submit" class="btn btn-default">Guardar</button>
+				</div>
+			</div>
+		</form>
+		<div class="alert alert-danger" role="alert" hidden="true" id="alert">Debes insertar el nombre del equipo</div>
+	</div>
+{% endblock %}
+{% block scripts %}
+	<script>
+		function validateForm() {
+			var valor = $("#nombre").val();
+			if (valor == "") {
+				$("#nombre-group").attr('class', 'form-group has-error');
+				$("#alert").attr('hidden', false);
+				return false;
+			}
+		}
+	</script>	    
+{% endblock%}

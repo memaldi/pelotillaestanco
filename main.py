@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador
+from model import Usuario, Equipo, Jugador, Jornada
 from google.appengine.ext import db
 
 import webapp2
@@ -260,7 +260,53 @@ class BorrarEquipo(webapp2.RequestHandler):
                     return
         self.redirect('/')
 
+class Jornadas(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    jornadas = Jornada.all()
+                    jornada_list = []
+                    for jornada in jornadas:
+                        completa = True
+                        if len(jornada.partido_set) < 0:
+                            completa = False
+                        else:
+                            for partido in jornada.partido_set:
+                                print dir(partido) 
+                        jornada_list.append(jornada)
+                    content = {'joarnada': jornada_list}
+                    template = JINJA_ENVIRONMENT.get_template('templates/panel-jornadas.html')
+                    self.response.write(template.render(content))
+                    return 
+        self.redirect('/')
+
+class FichaJornada(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    template = JINJA_ENVIRONMENT.get_template('templates/jornada.html')
+                    key = self.request.get('key')
+                    if key != '':
+                        joarnada = Jornada.get(key)
+                        content = {'jornada': jornada}
+                        self.response.write(template.render(content))
+                    else:
+                        equipos = Equipo.all()
+                        equipos.filter("lfp =", True)
+                        content = {'rango': range(10), 'equipos': equipos}
+                        self.response.write(template.render(content))
+                    return 
+        self.redirect('/')
+
 app = webapp2.WSGIApplication([
+    ('/admin/jornadas/nuevo', FichaJornada),
+    ('/admin/jornadas', Jornadas),
     ('/admin/jugadores/borrar', BorrarJugador),
     ('/admin/jugadores/nuevo', FichaJugador),
     ('/admin/jugadores', Jugadores),

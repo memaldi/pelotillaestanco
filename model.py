@@ -17,8 +17,7 @@ class Equipo(db.Model):
 
 class Jornada(db.Model):
 	numero = db.IntegerProperty()
-	fecha = db.DateProperty()
-	fecha_limite = db.DateTimeProperty()
+	fecha_inicio = db.DateProperty()
 
 class Partido(db.Model):
 	local = db.ReferenceProperty(reference_class=Equipo, collection_name='local')
