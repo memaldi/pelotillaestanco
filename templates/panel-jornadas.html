@@ -21,13 +21,12 @@
   	<tbody>
       {% for jornada in jornadas%}
         <tr>
-          <td><input type="checkbox" class="checkboxJornada" name="{{equipo.key()}}" id="check-{{equipo.key()}}"></td>
-          <td>{{equipo.nombre}}</td>
-          <td>{% if equipo.lfp %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
-          <td>{% if equipo.champions %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
-          <td>{% if equipo.uefa %}<span class="glyphicon glyphicon-ok"></span>{% endif %}</td>
-          <td><a class="btn btn-default" href="/admin/equipos/nuevo?key={{equipo.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
-          <td><button type="button" class="btn btn-default" data-toggle="modal" id="trash-link" data-id="{{equipo.key()}}" data-target="#myModal"><span class="glyphicon glyphicon-trash"></span></button></td>
+          <td><input type="checkbox" class="checkboxJornada" name="{{jornada.key()}}" id="check-{{jornada.key()}}"></td>
+          <td>Jornada {{jornada.numero}}</td>
+          <td>{{jornada.fecha_inicio}}</td>
+          <td></td>
+          <td><a class="btn btn-default" href="/admin/jornadas/nuevo?key={{jornada.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
+          <td><button type="button" class="btn btn-default" data-toggle="modal" id="trash-link" data-id="{{jornada.key()}}" data-target="#myModal"><span class="glyphicon glyphicon-trash"></span></button></td>
         </tr>
       {% endfor %}
   	</tbody>

@@ -270,16 +270,14 @@ class Jornadas(webapp2.RequestHandler):
             if usuario != None:
                 if usuario.admin:
                     jornadas = Jornada.all()
+                    jornadas.order("numero")
                     jornada_list = []
                     for jornada in jornadas:
                         completa = True
-                        if len(jornada.partido_set) < 0:
-                            completa = False
-                        else:
-                            for partido in jornada.partido_set:
-                                print dir(partido) 
+                        for partido in jornada.partido_set:
+                            print dir(partido) 
                         jornada_list.append(jornada)
-                    content = {'joarnada': jornada_list}
+                    content = {'jornadas': jornada_list}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-jornadas.html')
                     self.response.write(template.render(content))
                     return 
@@ -295,12 +293,16 @@ class FichaJornada(webapp2.RequestHandler):
                     template = JINJA_ENVIRONMENT.get_template('templates/jornada.html')
                     key = self.request.get('key')
                     if key != '':
-                        joarnada = Jornada.get(key)
-                        content = {'jornada': jornada}
-                        self.response.write(template.render(content))
-                    else:
+                        jornada = Jornada.get(key)
+                        partidos = jornada.partido_set
+                        partidos_list = []
                         equipos = Equipo.all()
                         equipos.filter("lfp =", True)
+                        for partido in partidos:
+                            partidos_list.append(partido)
+                        content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos}
+                        self.response.write(template.render(content))
+                    else:
                         content = {'rango': range(10), 'equipos': equipos}
                         self.response.write(template.render(content))
                     return 
