@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -⁻- coding: UTF-8 -*-
 #
 # Copyright 2007 Google Inc.
 #
@@ -15,12 +16,13 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada
+from model import Usuario, Equipo, Jugador, Jornada, Partido
 from google.appengine.ext import db
 
 import webapp2
 import jinja2
 import os
+import time
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -304,7 +306,88 @@ class FichaJornada(webapp2.RequestHandler):
                     return 
         self.redirect('/')
 
+# IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
+class CargarJornadas(webapp2.RequestHandler):
+    def get(self):
+        with open('datos/calendario.html') as f:
+            local = None
+            visitante = None
+            num_partido = 1
+            num_jornada = 1
+
+            print 'Jornada %s' % num_jornada
+            print '*' * 10
+
+            jornada = Jornada(numero=num_jornada)
+            jornada.put()
+
+            for line in f:
+                if num_jornada <= 19:
+                    if 'local' in line:
+                        partial_local = line[:line.rfind('</span>')]
+                        local = partial_local[partial_local.rfind('>') + 1:]
+                    elif 'visitante' in line:
+                        partial_visitante = line[:line.rfind('</span>')]
+                        visitante = partial_visitante[partial_visitante.rfind('>') + 1:]
+
+                    if local != None and visitante != None:
+                        print '%s - %s' % (local, visitante)
+                        equipos = Equipo.all()
+                        equipo_local = None
+                        equipo_visitante = None
+                        for equipo in equipos:
+                            if equipo.nombre == local.decode('utf-8'):
+                                equipo_local = equipo
+                            elif equipo.nombre == visitante.decode('utf-8'):
+                                equipo_visitante = equipo
+                        if equipo_local == None:
+                            print 'Creando equipo: %s' % local
+                            equipo_local = Equipo(nombre=local.decode('utf-8'), lfp=True, champions=False, uefa=False)
+                            equipo_local.put()
+                        if equipo_visitante == None:
+                            print 'Creando equipo: %s' % visitante
+                            equipo_visitante = Equipo(nombre=visitante.decode('utf-8'), lfp=True, champions=False, uefa=False)
+                            equipo_visitante.put()
+
+                        partido = Partido(local=equipo_local, visitante=equipo_visitante, jornada=jornada)
+                        partido.put()
+
+                        equipo_local = None
+                        equipo_visitante = None
+
+                        local, visitante = None, None
+                        if num_partido >= 10:
+                            if num_jornada == 1:
+                                time.sleep(10)
+                            num_jornada += 1
+                            num_partido = 1
+                            print 
+                            print
+                            if num_jornada <= 19:
+                                print 'Jornada %s' % num_jornada
+                                print '*' * 10
+                                jornada = Jornada(numero=num_jornada)
+                                jornada.put()
+                        else:
+                            num_partido += 1
+                else:
+                    break
+                
+            time.sleep(10)
+            jornadas = Jornada.all()
+            jornadas.order("numero")
+            for jornada in jornadas:
+                jornada_vuelta = Jornada(numero=num_jornada)
+                jornada_vuelta.put()
+                num_jornada += 1
+                for partido in jornada.partido_set:
+                    partido_vuelta = Partido(local=partido.visitante, visitante=partido.local, jornada=jornada_vuelta)
+                    partido_vuelta.put()
+
+
+
 app = webapp2.WSGIApplication([
+    ('/cargarjornadas', CargarJornadas),
     ('/admin/jornadas/nuevo', FichaJornada),
     ('/admin/jornadas', Jornadas),
     ('/admin/jugadores/borrar', BorrarJugador),
