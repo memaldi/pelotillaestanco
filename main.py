@@ -299,10 +299,28 @@ class FichaJornada(webapp2.RequestHandler):
                         jornada = Jornada.get(key)
                         partidos = jornada.partido_set
                         partidos_list = []
+                        result_dict = {}
                         for partido in partidos:
                             partidos_list.append(partido)
+                            result_dict[partido.key()] = {}
+                            print partido.key()
+                            golesPartido = GolesPartidoEquipo.all()
+                            golesPartido.filter("partido =", partido)
+                            golesLocal = golesPartido.filter("equipo =", partido.local)
+
+                            golesPartido = GolesPartidoEquipo.all()
+                            golesPartido.filter("partido =", partido)
+                            golesVisitante = golesPartido.filter("equipo =", partido.visitante)
+                            if golesLocal.get() != None and golesVisitante.get() != None:
+                                print golesLocal.get().goles
+                                result_dict[partido.key()]['local'] = int(golesLocal.get().goles)
+                                result_dict[partido.key()]['visitante'] = int(golesVisitante.get().goles)
+                            else:
+                                result_dict[partido.key()]['local'] = None
+                                result_dict[partido.key()]['visitante'] = None
+
                         fecha_str = '%sT%s' % (jornada.fecha_inicio.date(), jornada.fecha_inicio.time())
-                        content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos, 'fecha_str': fecha_str}
+                        content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos, 'fecha_str': fecha_str, 'result_dict': result_dict}
                         self.response.write(template.render(content))
                     else:
                         jornadas = Jornada.all()
@@ -326,7 +344,6 @@ class FichaJornada(webapp2.RequestHandler):
                 if usuario.admin:
                     key = self.request.get('key')
                     numero = self.request.get('numero')
-                    print self.request.get('fecha')
                     try:
                         fecha_struct = time.strptime(self.request.get('fecha'), "%Y-%m-%dT%H:%M:%S")
                     except:
@@ -342,7 +359,6 @@ class FichaJornada(webapp2.RequestHandler):
                             if arg.startswith('local-'):
                                 partido_key = arg.replace('local-', '')
                                 partido_key_set.add(partido_key)
-                        
                         for partido_key in partido_key_set:
                             partido = Partido.get(partido_key)
                             local_id = self.request.get('local-%s' % partido_key)
@@ -352,7 +368,6 @@ class FichaJornada(webapp2.RequestHandler):
                             
                             local = Equipo.get(local_id)
                             visitante = Equipo.get(visitante_id)
-                            
                             if goles_local != '' and goles_visitante != '':
 
                                 golesPartidoLocal = GolesPartidoEquipo.all()
@@ -368,9 +383,18 @@ class FichaJornada(webapp2.RequestHandler):
                                 if golesPartidoLocal == None:
                                     golesPartidoLocal = GolesPartidoEquipo(equipo=local, partido=partido, goles=int(goles_local))
                                     golesPartidoLocal.put()
+                                else:
+                                    golesPartidoLocal.goles = int(goles_local)
+                                    golesPartidoLocal.equipo = local
+                                    db.put(golesPartidoLocal)
+
                                 if golesPartidoVisitante == None:
                                     golesPartidoVisitante = GolesPartidoEquipo(equipo=visitante, partido=partido, goles=int(goles_visitante))
                                     golesPartidoVisitante.put()
+                                else:
+                                    golesPartidoVisitante.goles = int(goles_visitante)
+                                    golesPartidoVisitante.equipo = visitante
+                                    db.put(golesPartidoVisitante)
 
                             partido.local = local
                             partido.visitante = visitante
