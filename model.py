@@ -17,7 +17,7 @@ class Equipo(db.Model):
 
 class Jornada(db.Model):
 	numero = db.IntegerProperty()
-	fecha_inicio = db.DateProperty()
+	fecha_inicio = db.DateTimeProperty()
 
 class Partido(db.Model):
 	local = db.ReferenceProperty(reference_class=Equipo, collection_name='local')
@@ -47,7 +47,7 @@ class PronosticoPartido(db.Model):
 class PronosticoJugador(db.Model):
 	pronostico_jornada = db.ReferenceProperty(reference_class=PronosticoJornada)
 	jugador = db.ReferenceProperty(reference_class=Jugador)
-	goles =db.IntegerProperty()
+	goles = db.IntegerProperty()
 
 class PronosticoGlobal(db.Model):
 	campeon_invierno = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_invierno')

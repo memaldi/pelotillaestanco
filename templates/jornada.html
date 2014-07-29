@@ -9,18 +9,19 @@
 {% endblock %}}
 
 {% block admin_content %}
+	{{fecha_str}}
 	<div class="well">
 		<form class="form-horizontal" role="form" action="/admin/jornadas/nuevo" method="post" onsubmit="return validateForm()">
 			<div class="form-group" id="nombre-group">
-				<label for="nombre" class="col-sm-2 control-label">Número de la jornada</label>
+				<label for="numero" class="col-sm-2 control-label">Número de la jornada</label>
 				<div class="col-sm-3">
-				  <input type="number" class="form-control" id="numero" name="numero" min="1"{% if jornada %} value="{{jornada.numero}}" {% endif %}>
+				  <input type="number" class="form-control" id="numero" name="numero" min="1"{% if jornada %} value="{{jornada.numero}}" {% else %} value="{{numero}}" {% endif %}>
 				</div>
 			</div>
 			<div class="form-group" id="fecha-group">
 				<label for="fecha" class="col-sm-2 control-label">Fecha y hora de inicio</label>
 				<div class="col-sm-3">
-				  <input type="datetime-local" class="form-control" id="fecha" name="fecha"{% if jornada %} value="{{jornada.fecha_inicio}}" {% endif %}>
+				  <input type="datetime-local" class="form-control" id="fecha" name="fecha"{% if jornada %} value="{{fecha_str}}" {% endif %}>
 				</div>
 			</div>
 
@@ -40,23 +41,23 @@
 						{% for partido in partidos %}
 						<tr>
 							<td>
-								<select class="form-control">
+								<select class="form-control" name="local-{{partido.key()}}">
 								  {% for equipo in equipos %}
-								  	<option {% if partido.local.nombre == equipo.nombre %} selected {% endif %}>{{equipo.nombre}}</option>
+								  	<option value="{{equipo.key()}}" {% if partido.local.nombre == equipo.nombre %} selected {% endif %}>{{equipo.nombre}}</option>
 								  {% endfor %}
 								</select>
 							</td>
 							<td>
-								<input type="number" min="0" class="form-control" placeholder="Goles Local">
+								<input type="number" min="0" class="form-control" placeholder="Goles Local" value="goles-local-{{partido.key()}}">
 							</td>
 							<td>-</td>
 							<td>
-								<input type="number" min="0" class="form-control" placeholder="Goles Visitante">
+								<input type="number" min="0" class="form-control" placeholder="Goles Visitante" value="goles-visitante-{{partido.key()}}">
 							</td>
 							<td>
-								<select class="form-control">
+								<select class="form-control" name="visitante-{{partido.key()}}">
 								  {% for equipo in equipos %}
-								  	<option {% if partido.visitante.nombre == equipo.nombre %} selected {% endif %}>{{equipo.nombre}}</option>
+								  	<option value="{{equipo.key()}}" {% if partido.visitante.nombre == equipo.nombre %} selected {% endif %}>{{equipo.nombre}}</option>
 								  {% endfor %}
 								</select>
 							</td>
@@ -66,23 +67,23 @@
 						{% for item in rango %}
 						<tr>
 							<td>
-								<select class="form-control">
+								<select class="form-control" name="local-{{item}}">
 								  {% for equipo in equipos %}
-								  	<option>{{equipo.nombre}}</option>
+								  	<option value="{{equipo.key()}}">{{equipo.nombre}}</option>
 								  {% endfor %}
 								</select>
 							</td>
 							<td>
-								<input type="number" min="0" class="form-control" placeholder="Goles Local">
+								<input type="number" min="0" class="form-control" placeholder="Goles Local" value="goles-local-{{item}}">
 							</td>
 							<td>-</td>
 							<td>
-								<input type="number" min="0" class="form-control" placeholder="Goles Local">
+								<input type="number" min="0" class="form-control" placeholder="Goles Visitante" value="goles-visitante-{{item}}">
 							</td>
 							<td>
-								<select class="form-control">
+								<select class="form-control" name="visitante-{{item}}">
 								  {% for equipo in equipos %}
-								  	<option>{{equipo.nombre}}</option>
+								  	<option value="{{equipo.key()}}">{{equipo.nombre}}</option>
 								  {% endfor %}
 								</select>
 							</td>

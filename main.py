@@ -16,13 +16,14 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada, Partido
+from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo
 from google.appengine.ext import db
 
 import webapp2
 import jinja2
 import os
 import time
+from datetime import datetime
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -275,7 +276,7 @@ class Jornadas(webapp2.RequestHandler):
                     for jornada in jornadas:
                         completa = True
                         for partido in jornada.partido_set:
-                            print dir(partido) 
+                            pass 
                         jornada_list.append(jornada)
                     content = {'jornadas': jornada_list}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-jornadas.html')
@@ -292,20 +293,111 @@ class FichaJornada(webapp2.RequestHandler):
                 if usuario.admin:
                     template = JINJA_ENVIRONMENT.get_template('templates/jornada.html')
                     key = self.request.get('key')
+                    equipos = Equipo.all()
+                    equipos.filter("lfp =", True)
                     if key != '':
                         jornada = Jornada.get(key)
                         partidos = jornada.partido_set
                         partidos_list = []
-                        equipos = Equipo.all()
-                        equipos.filter("lfp =", True)
                         for partido in partidos:
                             partidos_list.append(partido)
-                        content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos}
+                        fecha_str = '%sT%s' % (jornada.fecha_inicio.date(), jornada.fecha_inicio.time())
+                        content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos, 'fecha_str': fecha_str}
                         self.response.write(template.render(content))
                     else:
-                        content = {'rango': range(10), 'equipos': equipos}
+                        jornadas = Jornada.all()
+                        jornadas.order('-numero')
+                        ultima_jornada = jornadas.get()
+                        numero = ultima_jornada.numero
+                        if numero == None:
+                            numero = 1
+                        else:
+                            numero += 1
+                        content = {'rango': range(10), 'equipos': equipos, 'numero': numero}
                         self.response.write(template.render(content))
                     return 
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    key = self.request.get('key')
+                    numero = self.request.get('numero')
+                    fecha_struct = time.strptime(self.request.get('fecha'), "%Y-%m-%dT%H:%M")
+                    fecha = datetime(year=fecha_struct.tm_year, month=fecha_struct.tm_mon, day=fecha_struct.tm_mday, hour=fecha_struct.tm_hour, minute=fecha_struct.tm_min)
+                    print fecha
+                    if key != '':
+                        jornada = Jornada.get(key)
+                        jornada.numero = int(numero)
+                        jornada.fecha_inicio = fecha
+                        db.put(jornada)
+                        partido_key_set = set()
+                        for arg in self.request.arguments():
+                            if arg.startswith('local-'):
+                                partido_key = arg.replace('local-', '')
+                                partido_key_set.add(partido_key)
+                        
+                        for partido_key in partido_key_set:
+                            partido = Partido.get(partido_key)
+                            local_id = self.request.get('local-%s' % partido_key)
+                            visitante_id = self.request.get('visitante-%s' % partido_key)
+                            goles_local = self.request.get('goles-local-%s' % partido_key)
+                            goles_visitante = self.request.get('goles-visitante-%s' % partido_key)
+                            
+                            local = Equipo.get(local_id)
+                            visitante = Equipo.get(visitante_id)
+                            
+                            if goles_local != '' and goles_visitante != '':
+
+                                golesPartidoLocal = GolesPartidoEquipo.all()
+                                golesPartidoLocal.filter("partido =", partido)
+                                golesPartidoLocal.filter("equipo =", local)
+                                golesPartidoLocal = golesPartidoLocal.get()
+
+                                golesPartidoVisitante = GolesPartidoEquipo.all()
+                                golesPartidoVisitante.filter("partido =", partido)
+                                golesPartidoVisitante.filter("equipo =", visitante)
+                                golesPartidoVisitante = golesPartidoVisitante.get()
+
+                                if golesPartidoLocal == None:
+                                    golesPartidoLocal = GolesPartidoEquipo(equipo=local, partido=partido, goles=int(goles_local))
+                                    golesPartidoLocal.put()
+                                if golesPartidoVisitante == None:
+                                    golesPartidoVisitante = GolesPartidoEquipo(equipo=visitante, partido=partido, goles=int(goles_visitante))
+                                    golesPartidoVisitante.put()
+
+                            partido.local = local
+                            partido.visitante = visitante
+                            partido.jornada = jornada
+                            db.put(partido)
+
+
+                    else:
+                        numero = self.request.get('numero')
+                        jornada = Jornada(numero=numero, fecha=fecha)
+                        jornada.put()
+                        for item in range(10):
+                            local_id = self.request.get('local-%s' % item)
+                            visitante_id = self.request.get('visitante-%s' % item)
+                            goles_local = self.request.get('goles-local-%s' % item)
+                            goles_visitante = self.request.get('goles-visitante-%s' % item)
+
+                            local = Equipo.get(local_id)
+                            visitante = Equipo.get(visitante_id)
+                            partido = Partido(local=local, visitante=visitante, jornada=jornada)
+                            partido.put()
+
+                            if goles_local != '' and goles_visitante != '':
+                                golesPartidoLocal = GolesPartidoEquipo(equipo=local, partido=partido, goles=int(goles_local))
+                                golesPartidoLocal.put()
+                                golesPartidoVisitante = GolesPartidoEquipo(equipo=visitante, partido=partido, goles=int(goles_visitante))
+                                golesPartidoVisitante.put()
+                    self.redirect('/admin/jornadas')
+                    return
+
         self.redirect('/')
 
 # IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
