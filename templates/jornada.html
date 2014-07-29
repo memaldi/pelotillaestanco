@@ -21,7 +21,7 @@
 			<div class="form-group" id="fecha-group">
 				<label for="fecha" class="col-sm-2 control-label">Fecha y hora de inicio</label>
 				<div class="col-sm-3">
-				  <input type="datetime-local" class="form-control" id="fecha" name="fecha"{% if jornada %} value="{{fecha_str}}" {% endif %}>
+				  <input type="datetime-local" step="1" class="form-control" id="fecha" name="fecha"{% if jornada %} value="{{fecha_str}}" {% endif %}>
 				</div>
 			</div>
 

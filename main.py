@@ -326,9 +326,12 @@ class FichaJornada(webapp2.RequestHandler):
                 if usuario.admin:
                     key = self.request.get('key')
                     numero = self.request.get('numero')
-                    fecha_struct = time.strptime(self.request.get('fecha'), "%Y-%m-%dT%H:%M")
-                    fecha = datetime(year=fecha_struct.tm_year, month=fecha_struct.tm_mon, day=fecha_struct.tm_mday, hour=fecha_struct.tm_hour, minute=fecha_struct.tm_min)
-                    print fecha
+                    print self.request.get('fecha')
+                    try:
+                        fecha_struct = time.strptime(self.request.get('fecha'), "%Y-%m-%dT%H:%M:%S")
+                    except:
+                        fecha_struct = time.strptime(self.request.get('fecha') + ':00', "%Y-%m-%dT%H:%M:%S")
+                    fecha = datetime(year=fecha_struct.tm_year, month=fecha_struct.tm_mon, day=fecha_struct.tm_mday, hour=fecha_struct.tm_hour, minute=fecha_struct.tm_min, second=fecha_struct.tm_sec)
                     if key != '':
                         jornada = Jornada.get(key)
                         jornada.numero = int(numero)
