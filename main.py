@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo
+from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador
 from google.appengine.ext import db
 
 import webapp2
@@ -429,6 +429,71 @@ class FichaJornada(webapp2.RequestHandler):
 
         self.redirect('/')
 
+
+class Goleadores(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    jornada_key = self.request.get('key')
+                    jornada = Jornada.get(jornada_key)
+                    content = {'goleadores': jornada.golesjornadajugador_set, 'jornada_key': jornada_key}
+                    template = JINJA_ENVIRONMENT.get_template('templates/panel-goleadores.html')
+                    self.response.write(template.render(content))
+                    return
+        self.redirect('/')
+
+class FichaGoleador(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    template = JINJA_ENVIRONMENT.get_template('templates/goleador.html')
+                    key = self.request.get('key')
+                    jornada_key = self.request.get('jornada')
+                    jugadores = Jugador.all()
+                    if key != '':
+                        goleador = GolesJornadaJugador.get(key)
+                        content = {'jugadores': jugadores, 'jornada_key': jornada_key, 'goleador': goleador}
+                        self.response.write(template.render(content))
+                        return
+                    else:
+                        content = {'jugadores': jugadores, 'jornada_key': jornada_key}
+                        self.response.write(template.render(content))
+                        return
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    key = self.request.get('key')
+                    jugador_key = self.request.get('jugador')
+                    jugador = Jugador.get(jugador_key)        
+                    goles = self.request.get('goles')
+                    jornada_key = None
+                    if key != '':
+                        goleador = GolesJornadaJugador.get(key)
+                        goleador.jugador = jugador
+                        goleador.goles = int(goles)
+                        db.put(goleador)
+                        jornada_key = goleador.jornada.key()
+                    else:
+                        jornada_key = self.request.get('jornada_key')
+                        jornada = Jornada.get(jornada_key)
+                        goleador = GolesJornadaJugador(jornada=jornada, jugador=jugador, goles=int(goles))
+                        goleador.put()
+                    self.redirect('/admin/jornadas/goleadores?key=%s' % jornada_key)
+                    return
+        self.redirect('/')
+
+
 # IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
 class CargarJornadas(webapp2.RequestHandler):
     def get(self):
@@ -510,7 +575,9 @@ class CargarJornadas(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([
-    ('/cargarjornadas', CargarJornadas),
+    #('/cargarjornadas', CargarJornadas),
+    ('/admin/jornadas/goleadores/nuevo', FichaGoleador),
+    ('/admin/jornadas/goleadores', Goleadores),
     ('/admin/jornadas/nuevo', FichaJornada),
     ('/admin/jornadas', Jornadas),
     ('/admin/jugadores/borrar', BorrarJugador),

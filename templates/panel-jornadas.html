@@ -13,8 +13,8 @@
 	  			<th><input type="checkbox" id="select-all" onclick="selectAll()"></th>
 	  			<th>Jornada</th>
           <th>Fecha de Inicio</th>
-          <th>Completa</th>
 	  			<th></th>
+          <th></th>
           <th></th>
 	  		</tr>
   	</thead>
@@ -24,9 +24,9 @@
           <td><input type="checkbox" class="checkboxJornada" name="{{jornada.key()}}" id="check-{{jornada.key()}}"></td>
           <td>Jornada {{jornada.numero}}</td>
           <td>{% if jornada.fecha_inicio == None%} Sin asignar {% else %} {{jornada.fecha_inicio}} {% endif %}</td>
-          <td></td>
           <td><a class="btn btn-default" href="/admin/jornadas/nuevo?key={{jornada.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
           <td><button type="button" class="btn btn-default" data-toggle="modal" id="trash-link" data-id="{{jornada.key()}}" data-target="#myModal"><span class="glyphicon glyphicon-trash"></span></button></td>
+          <td><a class="btn btn-default" href="/admin/jornadas/goleadores?key={{jornada.key()}}" role="button"><span class="icon-football-soccer"></span></a></td>
         </tr>
       {% endfor %}
   	</tbody>

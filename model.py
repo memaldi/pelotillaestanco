@@ -34,6 +34,11 @@ class Jugador(db.Model):
 	demarcacion = db.StringProperty()
 	equipo = db.ReferenceProperty(reference_class=Equipo)
 
+class GolesJornadaJugador(db.Model):
+	jornada = db.ReferenceProperty(reference_class=Jornada)
+	jugador = db.ReferenceProperty(reference_class=Jugador)
+	goles = db.IntegerProperty()
+
 class PronosticoJornada(db.Model):
 	jornada = db.ReferenceProperty(reference_class=Jornada)
 	usuario = db.ReferenceProperty(reference_class=Usuario)

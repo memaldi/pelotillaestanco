@@ -1,0 +1,55 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+	{% if equipo_nombre %}
+		Editar {{ equipo_nombre }}
+	{% else %}
+		Nuevo equipo
+	{% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+	<div class="well">
+		<form class="form-horizontal" role="form" action="/admin/jornadas/goleadores/nuevo" method="post">
+			<div class="form-group" id="jugador-group">
+				<label for="jugador" class="col-sm-2 control-label">Jugador</label>
+				<div class="col-sm-5">
+					<select class="form-control" name="jugador">
+					  {% for jugador in jugadores %}
+					  <option value="{{jugador.key()}}" {% if goleador %} {% if goleador.key() ==  jugador.key()%} selected{% endif %} {% endif %}>{{jugador.nombre}} ({{jugador.equipo.nombre}})</option>
+					  {% endfor %}
+					</select>
+				</div>
+			</div>
+			<div class="form-group" id="goles-group">
+				<label for="goles" class="col-sm-2 control-label">Número de goles</label>
+				<div class="col-sm-3">
+				  <input type="number" class="form-control" id="goles" name="goles" min="1"{% if goleador %} value="{{goleador.goles}}" {% endif %}>
+				</div>
+			</div>
+			{% if goleador %}
+			<input type="hidden" name="key" value="{{goleador.key()}}">
+			{% endif%}
+			<input type="hidden" name="jornada_key" value="{{jornada_key}}">
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <button type="submit" class="btn btn-default">Guardar</button>
+				  <a class="btn btn-default" href="/admin/jornadas/goleadores?key={{jornada_key}}" role="button">Cancelar</a>
+				</div>
+			</div>
+		</form>
+		<div class="alert alert-danger" role="alert" hidden="true" id="alert">Debes insertar el nombre del equipo</div>
+	</div>
+{% endblock %}
+{% block scripts %}
+	<script>
+		function validateForm() {
+			var valor = $("#nombre").val();
+			if (valor == "") {
+				$("#nombre-group").attr('class', 'form-group has-error');
+				$("#alert").attr('hidden', false);
+				return false;
+			}
+		}
+	</script>	    
+{% endblock%}
