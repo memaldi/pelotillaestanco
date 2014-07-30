@@ -318,8 +318,10 @@ class FichaJornada(webapp2.RequestHandler):
                             else:
                                 result_dict[partido.key()]['local'] = None
                                 result_dict[partido.key()]['visitante'] = None
-
-                        fecha_str = '%sT%s' % (jornada.fecha_inicio.date(), jornada.fecha_inicio.time())
+                        if jornada.fecha_inicio != None:
+                            fecha_str = '%sT%s' % (jornada.fecha_inicio.date(), jornada.fecha_inicio.time())
+                        else:
+                            fecha_str = None
                         content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos, 'fecha_str': fecha_str, 'result_dict': result_dict}
                         self.response.write(template.render(content))
                     else:
