@@ -57,7 +57,7 @@
   $(document).ready(function(){
     $("#trash-link").click(function(){ // Click to only happen on announce links
       var id = $(this).data('id');
-      $("#accept-button").attr('href', '/admin/jornadas/goleadores/borrar?key=' + $(this).data('id'));
+      $("#accept-button").attr('href', '/admin/jornadas/goleadores/borrar?key=' + $(this).data('id') + '&jornada={{jornada_key}}');
     });
   }); 
 
@@ -69,12 +69,13 @@
       if (checkbox.checked) {
         data[checkbox.name] = "true";
       }
+      data['jornada_key'] = "{{jornada_key}}";
     });
     $.post("/admin/jornadas/goleadores", data);
   }
 
     function selectAll() {
-    var checkboxList = $(".checkboxEquipo");
+    var checkboxList = $(".checkboxGoleador");
     var status = $("#select-all")[0].checked;
     checkboxList.each(function() {
       var id = this.id;   

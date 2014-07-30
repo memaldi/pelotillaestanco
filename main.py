@@ -445,6 +445,20 @@ class Goleadores(webapp2.RequestHandler):
                     return
         self.redirect('/')
 
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    keys = self.request.arguments()
+                    for key in keys:
+                        if key != 'jornada_key':
+                            goleador = GolesJornadaJugador.get(key)
+                            db.delete(goleador)
+                    self.redirect('/admin/jornadas/goleadores?key=%s' % self.request.get('jornada_key'))
+                    return
+
 class FichaGoleador(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -489,6 +503,22 @@ class FichaGoleador(webapp2.RequestHandler):
                         jornada = Jornada.get(jornada_key)
                         goleador = GolesJornadaJugador(jornada=jornada, jugador=jugador, goles=int(goles))
                         goleador.put()
+                    self.redirect('/admin/jornadas/goleadores?key=%s' % jornada_key)
+                    return
+        self.redirect('/')
+
+class BorrarGoleador(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    print self.request.arguments()
+                    jornada_key = self.request.get('jornada')
+                    key = self.request.get('key')
+                    goleador = GolesJornadaJugador.get(key)
+                    db.delete(goleador)
                     self.redirect('/admin/jornadas/goleadores?key=%s' % jornada_key)
                     return
         self.redirect('/')
@@ -576,6 +606,7 @@ class CargarJornadas(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     #('/cargarjornadas', CargarJornadas),
+    ('/admin/jornadas/goleadores/borrar', BorrarGoleador),
     ('/admin/jornadas/goleadores/nuevo', FichaGoleador),
     ('/admin/jornadas/goleadores', Goleadores),
     ('/admin/jornadas/nuevo', FichaJornada),
