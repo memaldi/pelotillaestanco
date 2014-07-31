@@ -26,7 +26,7 @@
           <td>{{jugador.demarcacion}}</td>
           <td>{{jugador.equipo.nombre}}</td>
           <td><a class="btn btn-default" href="/admin/jugadores/nuevo?key={{jugador.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
-          <td><button type="button" class="btn btn-default" data-toggle="modal" id="trash-link" data-id="{{jugador.key()}}" data-target="#myModal"><span class="glyphicon glyphicon-trash"></span></button></td>
+          <td><a class="btn btn-default" href="/admin/jugadores/borrar?key={{jugador.key()}}" role="button"><span class="glyphicon glyphicon-trash"></span></a></td>
         </tr>
       {% endfor %}
   	</tbody>

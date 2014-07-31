@@ -429,6 +429,27 @@ class FichaJornada(webapp2.RequestHandler):
 
         self.redirect('/')
 
+class BorrarJornada(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    key = self.request.get('key')
+                    jornada = Jornada.get(key)
+                    for goleador in jornada.golesjornadajugador_set:
+                        db.delete(goleador)
+
+                    for partido in jornada.partido_set:
+                        db.delete(partido)
+
+                    db.delete(jornada)
+                      
+                    self.redirect('/admin/jornadas')
+                    return
+        self.redirect('/')
+
 
 class Goleadores(webapp2.RequestHandler):
     def get(self):
@@ -514,7 +535,6 @@ class BorrarGoleador(webapp2.RequestHandler):
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
                 if usuario.admin:
-                    print self.request.arguments()
                     jornada_key = self.request.get('jornada')
                     key = self.request.get('key')
                     goleador = GolesJornadaJugador.get(key)
@@ -609,6 +629,7 @@ app = webapp2.WSGIApplication([
     ('/admin/jornadas/goleadores/borrar', BorrarGoleador),
     ('/admin/jornadas/goleadores/nuevo', FichaGoleador),
     ('/admin/jornadas/goleadores', Goleadores),
+    ('/admin/jornadas/borrar', BorrarJornada),
     ('/admin/jornadas/nuevo', FichaJornada),
     ('/admin/jornadas', Jornadas),
     ('/admin/jugadores/borrar', BorrarJugador),

@@ -26,29 +26,11 @@
           <td>{{goleador.jugador.demarcacion}}</td>
           <td>{{goleador.goles}}</td>
           <td><a class="btn btn-default" href="/admin/jornadas/goleadores/nuevo?key={{goleador.key()}}&amp;jornada={{jornada_key}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
-          <td><button type="button" class="btn btn-default" data-toggle="modal" id="trash-link" data-id="{{goleador.key()}}" data-target="#myModal"><span class="glyphicon glyphicon-trash"></span></button></td>
+          <td><a class="btn btn-default" href="/admin/jornadas/goleadores/borrar?key={{goleador.key()}}&amp;jornada={{jornada_key}}" role="button"><span class="glyphicon glyphicon-trash"></span></a></td>
         </tr>
       {% endfor %}
   	</tbody>
 </table>
-
-<div class="modal fade" id="myModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title">Borrar goleador</h4>
-      </div>
-      <div class="modal-body">
-        <p>¿Deseas borrar este goleador?</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-        <a class="btn btn-danger" id="accept-button" role="button">Sí, deseo borrarlo</a>
-      </div>
-    </div><!-- /.modal-content -->
-  </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
 
 {% endblock %}
 
