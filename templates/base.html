@@ -53,11 +53,12 @@
         <div class="col-sm-3 col-md-2 sidebar">
           <h3>Pelotilla</h3>
           <ul class="nav nav-sidebar">
-            <li class="active"><a href="/pronosticos">Pronósticos</a></li>
+          	<li class="active"><a href="/">Visión General</a></li>
+            <li><a href="/pronosticos">Pronósticos</a></li>
             <li><a href="/pronostico-global">Pronóstico Global</a></li>
             <li><a href="/clasificación">Clasificación y resultados</a></li>
           </ul>
-
+          {% if usuario.admin %}
           <h3>Administración</h3>
           <ul class="nav nav-sidebar">
             <li class="active"><a href="/admin">Visión general</a></li>
@@ -67,6 +68,7 @@
             <li><a href="/admin/usuarios">Usuarios</a></li>
           </ul>
         </div>
+        {% endif %}
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <h1 class="page-header">{% block page_title %}{% endblock %}</h1>
           {% block admin_content %}

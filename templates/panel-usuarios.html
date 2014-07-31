@@ -13,12 +13,12 @@
 	  		</tr>
   	</thead>
   	<tbody>
-      {% for usuario in usuarios %}
+      {% for usuario_item in usuarios %}
         <tr>
-          <td>{{usuario.nick}}</td>
-          <td>{% if usuario.activo %} <span class="glyphicon glyphicon-ok"></span> {% endif %}</td>
-          <td>{% if usuario.admin %} <span class="glyphicon glyphicon-ok"></span> {% endif %}</td>
-          <td><a class="btn btn-default" href="/admin/usuarios/nuevo?key={{usuario.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
+          <td>{{usuario_item.nick}}</td>
+          <td>{% if usuario_item.activo %} <span class="glyphicon glyphicon-ok"></span> {% endif %}</td>
+          <td>{% if usuario_item.admin %} <span class="glyphicon glyphicon-ok"></span> {% endif %}</td>
+          <td><a class="btn btn-default" href="/admin/usuarios/nuevo?key={{usuario_item.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
         </tr>
       {% endfor %}
   	</tbody>

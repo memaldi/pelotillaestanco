@@ -45,10 +45,7 @@ class MainHandler(webapp2.RequestHandler):
                 self.response.write(template.render(content))
                 return 
                 
-            content = {}
-            if usuario.admin:
-                print usuario.admin
-                content['admin'] = True
+            content = {'usuario': usuario }
             template = JINJA_ENVIRONMENT.get_template('templates/main.html')
             self.response.write(template.render(content))
             return 
@@ -63,6 +60,7 @@ class Admin(webapp2.RequestHandler):
             if usuario != None:
                 if usuario.admin:
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-admin.html')
+                    content = {'usuario': usuario }
                     self.response.write(template.render())
                     return 
         self.redirect('/')
@@ -78,7 +76,7 @@ class Jugadores(webapp2.RequestHandler):
                     jugadores_list = []
                     for jugador in jugadores:
                         jugadores_list.append(jugador)
-                    content = {'jugadores': jugadores_list}
+                    content = {'jugadores': jugadores_list, 'usuario': usuario }
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-jugadores.html')
                     self.response.write(template.render(content))
                     return 
@@ -108,7 +106,7 @@ class FichaJugador(webapp2.RequestHandler):
                 if usuario.admin:
                     template = JINJA_ENVIRONMENT.get_template('templates/jugador.html')
                     key = self.request.get('key')
-                    content = {}
+                    content = {'usuario': usuario }
                     equipos = Equipo.all()
                     equipos_list = []
                     for equipo in equipos:
@@ -172,7 +170,7 @@ class Equipos(webapp2.RequestHandler):
                     equipos_list = []
                     for equipo in equipos:
                         equipos_list.append(equipo)
-                    content = {'equipos': equipos_list}
+                    content = {'equipos': equipos_list, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-equipos.html')
                     self.response.write(template.render(content))
                     return 
@@ -207,7 +205,7 @@ class FichaEquipo(webapp2.RequestHandler):
                     key = self.request.get('key')
                     if key != '':
                         equipo = Equipo.get(key)
-                        content = {'equipo': equipo}
+                        content = {'equipo': equipo, 'usuario': usuario}
                         self.response.write(template.render(content))
                     else:
                         self.response.write(template.render())
@@ -278,7 +276,7 @@ class Jornadas(webapp2.RequestHandler):
                         for partido in jornada.partido_set:
                             pass 
                         jornada_list.append(jornada)
-                    content = {'jornadas': jornada_list}
+                    content = {'jornadas': jornada_list, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-jornadas.html')
                     self.response.write(template.render(content))
                     return 
@@ -322,7 +320,7 @@ class FichaJornada(webapp2.RequestHandler):
                             fecha_str = '%sT%s' % (jornada.fecha_inicio.date(), jornada.fecha_inicio.time())
                         else:
                             fecha_str = None
-                        content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos, 'fecha_str': fecha_str, 'result_dict': result_dict}
+                        content = {'jornada': jornada, 'partidos': partidos_list, 'equipos': equipos, 'fecha_str': fecha_str, 'result_dict': result_dict, 'usuario': usuario}
                         self.response.write(template.render(content))
                     else:
                         jornadas = Jornada.all()
@@ -333,7 +331,7 @@ class FichaJornada(webapp2.RequestHandler):
                             numero = 1
                         else:
                             numero += 1
-                        content = {'rango': range(10), 'equipos': equipos, 'numero': numero}
+                        content = {'rango': range(10), 'equipos': equipos, 'numero': numero, 'usuario': usuario}
                         self.response.write(template.render(content))
                     return 
         self.redirect('/')
@@ -460,7 +458,7 @@ class Goleadores(webapp2.RequestHandler):
                 if usuario.admin:
                     jornada_key = self.request.get('key')
                     jornada = Jornada.get(jornada_key)
-                    content = {'goleadores': jornada.golesjornadajugador_set, 'jornada_key': jornada_key}
+                    content = {'goleadores': jornada.golesjornadajugador_set, 'jornada_key': jornada_key, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-goleadores.html')
                     self.response.write(template.render(content))
                     return
@@ -493,11 +491,11 @@ class FichaGoleador(webapp2.RequestHandler):
                     jugadores = Jugador.all()
                     if key != '':
                         goleador = GolesJornadaJugador.get(key)
-                        content = {'jugadores': jugadores, 'jornada_key': jornada_key, 'goleador': goleador}
+                        content = {'jugadores': jugadores, 'jornada_key': jornada_key, 'goleador': goleador, 'usuario': usuario}
                         self.response.write(template.render(content))
                         return
                     else:
-                        content = {'jugadores': jugadores, 'jornada_key': jornada_key}
+                        content = {'jugadores': jugadores, 'jornada_key': jornada_key, 'usuario': usuario}
                         self.response.write(template.render(content))
                         return
         self.redirect('/')
@@ -551,7 +549,7 @@ class Usuarios(webapp2.RequestHandler):
             if usuario != None:
                 if usuario.admin:
                     usuarios = Usuario.all()
-                    content = {'usuarios': usuarios}
+                    content = {'usuarios': usuarios, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-usuarios.html')
                     self.response.write(template.render(content))
                     return
@@ -567,7 +565,7 @@ class FichaUsuario(webapp2.RequestHandler):
                     template = JINJA_ENVIRONMENT.get_template('templates/usuario.html')
                     key = self.request.get('key')
                     usuario = Usuario.get(key)
-                    content = {'usuario': usuario}
+                    content = {'usuario_item': usuario, 'usuario': usuario}
                     self.response.write(template.render(content))
                     return
         self.redirect('/')

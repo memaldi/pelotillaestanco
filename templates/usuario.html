@@ -14,14 +14,14 @@
 			<div class="form-group" id="nombre-group">
 				<label for="nombre" class="col-sm-2 control-label">nick</label>
 				<div class="col-sm-5">
-				  <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Usuario" value="{{usuario.nick}}">
+				  <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Usuario" value="{{usuario_item.nick}}">
 				</div>
 			</div>
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-10">
 				  <div class="checkbox">
 				    <label>
-				      <input type="checkbox" name="activo" {% if usuario.activo %} checked {% endif %}>Activo
+				      <input type="checkbox" name="activo" {% if usuario_item.activo %} checked {% endif %}>Activo
 				    </label>
 				  </div>
 				</div>
@@ -30,13 +30,13 @@
 				<div class="col-sm-offset-2 col-sm-10">
 				  <div class="checkbox">
 				    <label>
-				      <input type="checkbox" name="admin" {% if usuario.admin %} checked {% endif %} >Administrador
+				      <input type="checkbox" name="admin" {% if usuario_item.admin %} checked {% endif %} >Administrador
 				    </label>
 				  </div>
 				</div>
 			</div>
 			{% if equipo %}
-			<input type="hidden" name="key" value="{{usuario.key()}}">
+			<input type="hidden" name="key" value="{{usuario_item.key()}}">
 			{% endif%}
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-10">
