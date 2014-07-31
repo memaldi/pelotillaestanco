@@ -543,6 +543,51 @@ class BorrarGoleador(webapp2.RequestHandler):
                     return
         self.redirect('/')
 
+class Usuarios(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    usuarios = Usuario.all()
+                    content = {'usuarios': usuarios}
+                    template = JINJA_ENVIRONMENT.get_template('templates/panel-usuarios.html')
+                    self.response.write(template.render(content))
+                    return
+        self.redirect('/')
+
+class FichaUsuario(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    template = JINJA_ENVIRONMENT.get_template('templates/usuario.html')
+                    key = self.request.get('key')
+                    usuario = Usuario.get(key)
+                    content = {'usuario': usuario}
+                    self.response.write(template.render(content))
+                    return
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    key = self.request.get('key')
+                    admin = self.request.get('admin')
+                    activo = self.request.get('activo')
+                    usuario = Usuario.get(key)
+                    usuario.activo = activo
+                    usuario.admin = admin
+                    db.put(usuario)
+                    self.redirect('/admin/usuarios')
+                    return
+        self.redirect('/')
 
 # IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
 class CargarJornadas(webapp2.RequestHandler):
@@ -626,6 +671,8 @@ class CargarJornadas(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     #('/cargarjornadas', CargarJornadas),
+    ('/admin/usuarios/nuevo', FichaUsuario),
+    ('/admin/usuarios', Usuarios),
     ('/admin/jornadas/goleadores/borrar', BorrarGoleador),
     ('/admin/jornadas/goleadores/nuevo', FichaGoleador),
     ('/admin/jornadas/goleadores', Goleadores),
