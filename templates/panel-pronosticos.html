@@ -1,0 +1,61 @@
+{% extends "templates/panel-admin.html" %}
+{% block page_title %}Jornadas{% endblock %}
+{% block admin_content %}
+
+<br />
+<table class="table table-striped" id="table">
+	<thead>
+  			<tr>
+	  			<th></th>
+	  			<th>Jornada</th>
+          <th>Fecha de Inicio</th>
+	  			<th></th>
+	  		</tr>
+  	</thead>
+  	<tbody>
+      {% for jornada in jornadas%}
+        <tr>
+          <td></td>
+          <td>Jornada {{jornada.numero}}</td>
+          <td>{% for key, value in fecha_limite_dict.iteritems() %} {% if key == jornada.key() %} {% if value == None %} Sin asignar {% else %} {{value}} {% endif %} {% endif %} {% endfor %}</td>
+          <td><a class="btn btn-default" href="/pronosticos/nuevo?key={{jornada.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
+        </tr>
+      {% endfor %}
+  	</tbody>
+</table>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  $(document).ready(function(){
+    $.each($("#trash-link"), function(key, value) {
+        value.click(function(){
+          var id = $(this).data('id');
+          $("#accept-button").attr('href', '/admin/jornadas/borrar?key=' + $(this).data('id'));
+        });
+    });
+  }); 
+
+  function borrarJornadas() {
+    var checkboxList = $(".checkboxJornada");
+    var data = {};
+    checkboxList.each(function(){
+      var checkbox = this;
+      if (checkbox.checked) {
+        data[checkbox.name] = "true";
+      }
+    });
+    $.post("/admin/jornadas", data);
+  }
+
+    function selectAll() {
+    var checkboxList = $(".checkboxJornada");
+    var status = $("#select-all")[0].checked;
+    checkboxList.each(function() {
+      var id = this.id;   
+      $("#" + id).prop('checked', status);
+    });
+  }
+</script>
+{% endblock %}

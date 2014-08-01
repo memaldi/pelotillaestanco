@@ -1,0 +1,63 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+	Jornada {{pronostico.jornada.numero}} (fecha limite: {% if fecha_limite == None %} Sin asignar {% else %} {{fecha_limite}} {% endif %})
+{% endblock %}}
+
+{% block admin_content %}
+
+	<div class="well">
+		<form class="form-horizontal" role="form" action="/pronosticos/nuevo" method="post">
+			<h2>Partidos</h2>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th>Local</th>
+						<th>Goles Local</th>
+						<th></th>
+						<th>Goles Visitante</th>
+						<th>Visitante</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for partido in pronostico.jornada.partido_set %}
+					<tr>
+						<td>
+							{{partido.local.nombre}}
+						</td>
+						<td>
+							<input type="number" min="0" class="form-control" placeholder="Goles Local" name="goles-local-{{partido.key()}}" {% for key, value in result_dict.iteritems() %} {% if key == partido.key() %} value="{{value.local}}" {% endif %} {% endfor %}>
+						</td>
+						<td>-</td>
+						<td>
+							<input type="number" min="0" class="form-control" placeholder="Goles Visitante" name="goles-visitante-{{partido.key()}}" {% for key, value in result_dict.iteritems() %} {% if key == partido.key() %} value="{{value.visitante}}" {% endif %} {% endfor %}>
+						</td>
+						<td>
+							{{partido.visitante.nombre}}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<input type="hidden" name="key" value="{{pronostico.key()}}">
+			<div class="form-group">
+				<div class="col-sm-offset-2 col-sm-10">
+				  <button type="submit" class="btn btn-default">Guardar</button>
+				</div>
+			</div>
+		</form>
+		<div class="alert alert-danger" role="alert" hidden="true" id="alert">Debes insertar el nombre del equipo</div>
+	</div>
+{% endblock %}
+{% block scripts %}
+	<script>
+		function validateForm() {
+			var valor = $("#nombre").val();
+			if (valor == "") {
+				$("#nombre-group").attr('class', 'form-group has-error');
+				$("#alert").attr('hidden', false);
+				return false;
+			}
+		}
+	</script>	    
+{% endblock%}
