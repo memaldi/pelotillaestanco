@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido
+from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador
 from google.appengine.ext import db
 
 import webapp2
@@ -595,19 +595,18 @@ class Pronosticos(webapp2.RequestHandler):
         if user:
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
-                if usuario.admin:
-                    jornadas = Jornada.all()
-                    jornadas.order("numero")
-                    fecha_limite_dict = {}
-                    for jornada in jornadas:
-                        if jornada.fecha_inicio == None:
-                            fecha_limite_dict[jornada.key()] = jornada.fecha_inicio
-                        else:
-                            fecha_limite_dict[jornada.key()] = jornada.fecha_inicio - datetime.timedelta(hours=2)
-                    content = {'jornadas': jornadas, 'fecha_limite_dict': fecha_limite_dict, 'usuario': usuario}
-                    template = JINJA_ENVIRONMENT.get_template('templates/panel-pronosticos.html')
-                    self.response.write(template.render(content))
-                    return
+                jornadas = Jornada.all()
+                jornadas.order("numero")
+                fecha_limite_dict = {}
+                for jornada in jornadas:
+                    if jornada.fecha_inicio == None:
+                        fecha_limite_dict[jornada.key()] = jornada.fecha_inicio
+                    else:
+                        fecha_limite_dict[jornada.key()] = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                content = {'jornadas': jornadas, 'fecha_limite_dict': fecha_limite_dict, 'usuario': usuario}
+                template = JINJA_ENVIRONMENT.get_template('templates/panel-pronosticos.html')
+                self.response.write(template.render(content))
+                return
         self.redirect('/')
 
 class FichaPronostico(webapp2.RequestHandler):
@@ -616,33 +615,32 @@ class FichaPronostico(webapp2.RequestHandler):
         if user:
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
-                if usuario.admin:
-                    key = self.request.get('key')
-                    jornada = Jornada.get(key)
-                    pronostico_jornada =  PronosticoJornada.all()
-                    pronostico_jornada.filter('jornada =', jornada)
-                    pronostico_jornada.filter('usuario =', usuario)
-                    pronostico_jornada = pronostico_jornada.get()
+                key = self.request.get('key')
+                jornada = Jornada.get(key)
+                pronostico_jornada =  PronosticoJornada.all()
+                pronostico_jornada.filter('jornada =', jornada)
+                pronostico_jornada.filter('usuario =', usuario)
+                pronostico_jornada = pronostico_jornada.get()
 
-                    fecha_limite = jornada.fecha_inicio
-                    if fecha_limite != None:
-                        fecha_limite = fecha_limite - datetime.timedelta(hours=2)
+                fecha_limite = jornada.fecha_inicio
+                if fecha_limite != None:
+                    fecha_limite = fecha_limite - datetime.timedelta(hours=2)
 
-                    result_dict = {}
+                result_dict = {}
 
-                    if pronostico_jornada != None:
-                        for pronostico_partido in pronostico_jornada.pronosticopartido_set:
-                            result_dict[pronostico_partido.partido.key()] = {}
-                            result_dict[pronostico_partido.partido.key()]['local'] = pronostico_partido.goles_local
-                            result_dict[pronostico_partido.partido.key()]['visitante'] = pronostico_partido.goles_visitante
-                    else:
-                        pronostico_jornada = PronosticoJornada(usuario=usuario, jornada=jornada)
-                        pronostico_jornada.put()
+                if pronostico_jornada != None:
+                    for pronostico_partido in pronostico_jornada.pronosticopartido_set:
+                        result_dict[pronostico_partido.partido.key()] = {}
+                        result_dict[pronostico_partido.partido.key()]['local'] = pronostico_partido.goles_local
+                        result_dict[pronostico_partido.partido.key()]['visitante'] = pronostico_partido.goles_visitante
+                else:
+                    pronostico_jornada = PronosticoJornada(usuario=usuario, jornada=jornada)
+                    pronostico_jornada.put()
 
-                    content = {'pronostico': pronostico_jornada, 'result_dict': result_dict, 'fecha_limite': fecha_limite, 'usuario': usuario}
-                    template = JINJA_ENVIRONMENT.get_template('templates/pronostico.html')
-                    self.response.write(template.render(content))
-                    return
+                content = {'pronostico': pronostico_jornada, 'result_dict': result_dict, 'fecha_limite': fecha_limite, 'usuario': usuario}
+                template = JINJA_ENVIRONMENT.get_template('templates/pronostico.html')
+                self.response.write(template.render(content))
+                return
         self.redirect('/')
 
     def post(self):
@@ -650,37 +648,115 @@ class FichaPronostico(webapp2.RequestHandler):
         if user:
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
-                if usuario.admin:
-                    key = self.request.get('key')
-                    pronostico_jornada = PronosticoJornada.get(key)
-                    partido_key_set = []
-                    for arg in self.request.arguments():
-                        if arg != 'key' and arg.startswith('goles-local-'):
-                            partido_key_set.append(arg.replace('goles-local-', ''))
+                key = self.request.get('key')
+                pronostico_jornada = PronosticoJornada.get(key)
+                partido_key_set = []
+                for arg in self.request.arguments():
+                    if arg != 'key' and arg.startswith('goles-local-'):
+                        partido_key_set.append(arg.replace('goles-local-', ''))
 
-                    for partido_key in partido_key_set:
+                for partido_key in partido_key_set:
 
-                        goles_local = self.request.get('goles-local-%s' % partido_key)
-                        goles_visitante = self.request.get('goles-visitante-%s' % partido_key)
+                    goles_local = self.request.get('goles-local-%s' % partido_key)
+                    goles_visitante = self.request.get('goles-visitante-%s' % partido_key)
 
-                        if goles_local != '' and goles_visitante != '':
+                    if goles_local != '' and goles_visitante != '':
 
-                            partido = Partido.get(partido_key)
-                            pronostico_partido = PronosticoPartido.all()
-                            pronostico_partido.filter("pronostico_jornada =", pronostico_jornada)
-                            pronostico_partido.filter("partido =", partido)
-                            pronostico_partido = pronostico_partido.get()
+                        partido = Partido.get(partido_key)
+                        pronostico_partido = PronosticoPartido.all()
+                        pronostico_partido.filter("pronostico_jornada =", pronostico_jornada)
+                        pronostico_partido.filter("partido =", partido)
+                        pronostico_partido = pronostico_partido.get()
 
-                            if pronostico_partido == None:
-                                pronostico_partido = PronosticoPartido(pronostico_jornada=pronostico_jornada, partido=partido, goles_local=int(goles_local), goles_visitante=int(goles_visitante))
-                                pronostico_partido.put()
-                            else:
-                                pronostico_partido.goles_local = int(goles_local)
-                                pronostico_partido.goles_visitante = int(goles_visitante)
-                                db.put(pronostico_partido)
+                        if pronostico_partido == None:
+                            pronostico_partido = PronosticoPartido(pronostico_jornada=pronostico_jornada, partido=partido, goles_local=int(goles_local), goles_visitante=int(goles_visitante))
+                            pronostico_partido.put()
+                        else:
+                            pronostico_partido.goles_local = int(goles_local)
+                            pronostico_partido.goles_visitante = int(goles_visitante)
+                            db.put(pronostico_partido)
 
-                    self.redirect('/pronosticos')
-                    return
+                self.redirect('/pronosticos')
+                return
+
+        self.redirect('/')
+
+class PronosticoGoleadores(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                jornada = Jornada.get(self.request.get('key'))
+
+                pronostico_jornada = PronosticoJornada.all()
+                pronostico_jornada.filter("jornada =", jornada)
+                pronostico_jornada.filter("usuario =", usuario)
+                pronostico_jornada = pronostico_jornada.get()
+
+                if pronostico_jornada == None:
+                    pronostico_jornada = PronosticoJornada(jornada=jornada, usuario=usuario)
+                    pronostico_jornada.put()
+
+                pronosticos_jugadores = PronosticoJugador.all()
+                pronosticos_jugadores.filter("pronostico_jornada =", pronostico_jornada)
+
+                defensas = Jugador.all()
+                defensas.filter("demarcacion =", 'Defensa')
+                centrocampistas = Jugador.all()
+                centrocampistas.filter("demarcacion =", 'Centrocampista')
+                delanteros = Jugador.all()
+                delanteros.filter("demarcacion =", 'Delantero')
+                content = {'defensas': defensas, 'centrocampistas': centrocampistas, 'delanteros': delanteros, 'jornada': jornada, 'pronosticos_jugadores': pronosticos_jugadores, 'usuario': usuario}
+                template = JINJA_ENVIRONMENT.get_template('templates/pronostico-goleadores.html')
+                self.response.write(template.render(content))
+                return
+
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                jornada = Jornada.get(self.request.get('key'))
+
+                defensa_key = self.request.get('defensa')
+                centrocampista_key = self.request.get('centrocampista')
+                delantero_key = self.request.get('delantero')
+                defensa, centrocampista, delantero = None, None, None
+
+                if defensa_key != '':
+                    defensa = Jugador.get(defensa_key)
+
+                if centrocampista_key != '':
+                    centrocampista = Jugador.get(centrocampista_key)
+
+                if delantero_key != '':
+                    delantero = Jugador.get(delantero_key)
+
+                pronostico_jornada = PronosticoJornada.all()
+                pronostico_jornada.filter("jornada =", jornada)
+                pronostico_jornada.filter("usuario =", usuario)
+                pronostico_jornada = pronostico_jornada.get()
+
+                for pronostico_jugador in pronostico_jornada.pronosticojugador_set:
+                    db.delete(pronostico_jugador)
+
+                if defensa != None:
+                    pronostico_jugador = PronosticoJugador(pronostico_jornada=pronostico_jornada, jugador=defensa)
+                    pronostico_jugador.put()
+
+                if centrocampista != None:
+                    pronostico_jugador = PronosticoJugador(pronostico_jornada=pronostico_jornada, jugador=centrocampista)
+                    pronostico_jugador.put()
+
+                if delantero != None:
+                    pronostico_jugador = PronosticoJugador(pronostico_jornada=pronostico_jornada, jugador=delantero)
+                    pronostico_jugador.put()
+
+                self.redirect('/pronosticos')
+                return
 
         self.redirect('/')
 
@@ -766,6 +842,7 @@ class CargarJornadas(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     #('/cargarjornadas', CargarJornadas),
+    ('/pronosticos/goleadores', PronosticoGoleadores),
     ('/pronosticos/nuevo', FichaPronostico),
     ('/pronosticos', Pronosticos),
     ('/admin/usuarios/nuevo', FichaUsuario),

@@ -9,6 +9,7 @@
 	  			<th></th>
 	  			<th>Jornada</th>
           <th>Fecha de Inicio</th>
+          <th></th>
 	  			<th></th>
 	  		</tr>
   	</thead>
@@ -19,6 +20,7 @@
           <td>Jornada {{jornada.numero}}</td>
           <td>{% for key, value in fecha_limite_dict.iteritems() %} {% if key == jornada.key() %} {% if value == None %} Sin asignar {% else %} {{value}} {% endif %} {% endif %} {% endfor %}</td>
           <td><a class="btn btn-default" href="/pronosticos/nuevo?key={{jornada.key()}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
+          <td><a class="btn btn-default" href="/pronosticos/goleadores?key={{jornada.key()}}" role="button"><span class="icon-football-soccer"></span></a></td>
         </tr>
       {% endfor %}
   	</tbody>
