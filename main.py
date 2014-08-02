@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador
+from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal
 from google.appengine.ext import db
 
 import webapp2
@@ -74,10 +74,8 @@ class Jugadores(webapp2.RequestHandler):
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
                 if usuario.admin:
-                    jugadores = Jugador.all()
-                    jugadores_list = []
-                    for jugador in jugadores:
-                        jugadores_list.append(jugador)
+                    jugadores_list = Jugador.all()
+                    jugadores_list.order("nombre")
                     content = {'jugadores': jugadores_list, 'usuario': usuario }
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-jugadores.html')
                     self.response.write(template.render(content))
@@ -109,10 +107,8 @@ class FichaJugador(webapp2.RequestHandler):
                     template = JINJA_ENVIRONMENT.get_template('templates/jugador.html')
                     key = self.request.get('key')
                     content = {'usuario': usuario }
-                    equipos = Equipo.all()
-                    equipos_list = []
-                    for equipo in equipos:
-                        equipos_list.append(equipo)
+                    equipos_list = Equipo.all()
+                    equipos_list.order("nombre")
                     content['equipos'] = equipos_list
                     if key != '':
                         jugador = Jugador.get(key)
@@ -168,10 +164,8 @@ class Equipos(webapp2.RequestHandler):
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
                 if usuario.admin:
-                    equipos = Equipo.all()
-                    equipos_list = []
-                    for equipo in equipos:
-                        equipos_list.append(equipo)
+                    equipos_list = Equipo.all()
+                    equipos_list.order("nombre")
                     content = {'equipos': equipos_list, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-equipos.html')
                     self.response.write(template.render(content))
@@ -760,6 +754,43 @@ class PronosticoGoleadores(webapp2.RequestHandler):
 
         self.redirect('/')
 
+class PronosticosGlobales(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                pronostico_global = PronosticoGlobal.all()
+                pronostico_global.filter("usuario =", usuario)
+                pronostico_global = pronostico_global.get()
+
+                if pronostico_global == None:
+                    pronostico_global = PronosticoGlobal(usuario=usuario)
+                    pronostico_global.put()
+
+                equipos_liga = Equipo.all()
+                equipos_liga.filter("lfp =", True)
+                equipos_liga.order("nombre")
+
+                equipos_champions = Equipo.all()
+                equipos_champions.filter("champions =", True)
+                equipos_champions.order("nombre")
+
+                equipos_uefa = Equipo.all()
+                equipos_uefa.filter("uefa =", True)
+                equipos_uefa.order("nombre")
+
+                porteros = Jugador.all()
+                porteros.filter("demarcacion =", 'Portero')
+                porteros.order("nombre")
+
+                content = {'pronostico_global': pronostico_global, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'usuario': usuario}
+                template = JINJA_ENVIRONMENT.get_template('templates/pronosticos-globales.html')
+                self.response.write(template.render(content))
+                return
+
+        self.redirect('/')
+
 # IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
 class CargarJornadas(webapp2.RequestHandler):
     def get(self):
@@ -842,6 +873,7 @@ class CargarJornadas(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     #('/cargarjornadas', CargarJornadas),
+    ('/pronostico-global', PronosticosGlobales),
     ('/pronosticos/goleadores', PronosticoGoleadores),
     ('/pronosticos/nuevo', FichaPronostico),
     ('/pronosticos', Pronosticos),

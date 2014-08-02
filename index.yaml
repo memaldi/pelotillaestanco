@@ -9,3 +9,23 @@ indexes:
 # manually, move them above the marker line.  The index.yaml file is
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
+
+- kind: Equipo
+  properties:
+  - name: champions
+  - name: nombre
+
+- kind: Equipo
+  properties:
+  - name: lfp
+  - name: nombre
+
+- kind: Equipo
+  properties:
+  - name: uefa
+  - name: nombre
+
+- kind: Jugador
+  properties:
+  - name: demarcacion
+  - name: nombre

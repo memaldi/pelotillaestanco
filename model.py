@@ -54,6 +54,7 @@ class PronosticoJugador(db.Model):
 	jugador = db.ReferenceProperty(reference_class=Jugador)
 
 class PronosticoGlobal(db.Model):
+	usuario = db.ReferenceProperty(reference_class=Usuario)
 	campeon_invierno = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_invierno')
 	campeon_copa = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_copa')
 	campeon_liga = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_liga')
