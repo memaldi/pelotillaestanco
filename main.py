@@ -24,6 +24,7 @@ import jinja2
 import os
 import time
 import datetime
+import re
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -875,9 +876,40 @@ class CargarJornadas(webapp2.RequestHandler):
                     partido_vuelta = Partido(local=partido.visitante, visitante=partido.local, jornada=jornada_vuelta)
                     partido_vuelta.put()
 
+class CargarJugadores(webapp2.RequestHandler):
+    def get(self):
+        for filename in os.listdir('datos/plantillas'):
+            try:
+                with open('datos/plantillas/%s' % filename) as f:
+                    equipo = Equipo.all()
+                    equipo = equipo.filter("nombre =", filename.replace('.html', ''))
+                    equipo = equipo.get()
+
+                    for line in f:
+                        nombre_jugador = None
+                        demarcacion = None
+                        m = re.search('<p>(\\w| |ñ|á|é|í|ó|ú)*</p>', line, re.UNICODE | re.IGNORECASE)
+                        if m != None:
+                            nombre_jugador = m.group(0).replace('<p>', '').replace('</p>', '')
+
+                        m = re.search('<p class="posicion">(\w| |á|é|í|ó|ú)*</p>', line, re.UNICODE | re.IGNORECASE)
+                        if m != None:
+                            demarcacion = m.group(0).replace('<p class="posicion">', '').replace('</p>', '')
+
+                        if nombre_jugador != None and demarcacion != None:
+                            if demarcacion == 'Medio':
+                                demarcacion = 'Centrocampista'
+                            print nombre_jugador, demarcacion
+                            jugador = Jugador(nombre=nombre_jugador.decode('utf-8'), demarcacion=demarcacion, equipo=equipo)
+                            jugador.put()
+            except Exception as e:
+                print e
+                print '%s not found' % filename.replace('.html', '')
+
 
 
 app = webapp2.WSGIApplication([
+    ('/cargarjugadores', CargarJugadores),
     ('/cargarjornadas', CargarJornadas),
     ('/pronostico-global', PronosticosGlobales),
     ('/pronosticos/goleadores', PronosticoGoleadores),

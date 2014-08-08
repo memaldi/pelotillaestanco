@@ -114,7 +114,7 @@
 					<select class="form-control" name="zamora">
 					  <option value=""></option>
 					  {% for portero in porteros %}
-					  	<option value="{{portero.key()}}">{{portero.nombre}}</option>
+					  	<option value="{{portero.key()}}">{{portero.nombre}} ({{portero.equipo.nombre}})</option>
 					  {% endfor %}
 					</select>
 				</div>
