@@ -18,6 +18,7 @@
 from google.appengine.api import users
 from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal
 from google.appengine.ext import db
+from HTMLParser import HTMLParser
 
 import webapp2
 import jinja2
@@ -25,6 +26,7 @@ import os
 import time
 import datetime
 import re
+import urllib
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -878,17 +880,24 @@ class CargarJornadas(webapp2.RequestHandler):
 
 class CargarJugadores(webapp2.RequestHandler):
     def get(self):
+        parser = HTMLParser()
         for filename in os.listdir('datos/plantillas'):
             try:
                 with open('datos/plantillas/%s' % filename) as f:
+
+                    print filename
+
                     equipo = Equipo.all()
-                    equipo = equipo.filter("nombre =", filename.replace('.html', ''))
+                    equipo = equipo.filter("nombre =", filename.replace('.html', '').decode('utf-8'))
                     equipo = equipo.get()
 
+                    #print equipo.nombre
                     for line in f:
                         nombre_jugador = None
                         demarcacion = None
-                        m = re.search('<p>(\\w| |ñ|á|é|í|ó|ú)*</p>', line, re.UNICODE | re.IGNORECASE)
+
+                        line = parser.unescape(line).encode('utf-8')
+                        m = re.search('<p>(\\w| |ñ|á|é|í|ó|ú)*</p>', line , re.UNICODE | re.IGNORECASE)
                         if m != None:
                             nombre_jugador = m.group(0).replace('<p>', '').replace('</p>', '')
 
@@ -897,15 +906,16 @@ class CargarJugadores(webapp2.RequestHandler):
                             demarcacion = m.group(0).replace('<p class="posicion">', '').replace('</p>', '')
 
                         if nombre_jugador != None and demarcacion != None:
+                            #print nombre_jugador, equipo.nombre.encode('utf-8')
                             if demarcacion == 'Medio':
                                 demarcacion = 'Centrocampista'
-                            print nombre_jugador, demarcacion
+                            #print nombre_jugador, demarcacion
+                            print nombre_jugador
                             jugador = Jugador(nombre=nombre_jugador.decode('utf-8'), demarcacion=demarcacion, equipo=equipo)
                             jugador.put()
             except Exception as e:
                 print e
-                print '%s not found' % filename.replace('.html', '')
-
+                break
 
 
 app = webapp2.WSGIApplication([
