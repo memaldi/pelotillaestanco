@@ -5,7 +5,6 @@
 {% endblock %}}
 
 {% block admin_content %}
-
 	<div class="well">
 		<form class="form-horizontal" role="form" action="/pronosticos/nuevo" method="post">
 			<h2>Partidos</h2>
@@ -26,11 +25,11 @@
 							{{partido.local.nombre}}
 						</td>
 						<td>
-							<input type="number" min="0" class="form-control" placeholder="Goles Local" name="goles-local-{{partido.key()}}" {% for key, value in result_dict.iteritems() %} {% if key == partido.key() %} value="{{value.local}}" {% endif %} {% endfor %}>
+							<input type="number" min="0" class="form-control" placeholder="Goles Local" name="goles-local-{{partido.key()}}" {% for key, value in result_dict.iteritems() %} {% if key == partido.key() %} value="{{value.local}}" {% endif %} {% endfor %} {% if disabled %} disabled {% endif %}>
 						</td>
 						<td>-</td>
 						<td>
-							<input type="number" min="0" class="form-control" placeholder="Goles Visitante" name="goles-visitante-{{partido.key()}}" {% for key, value in result_dict.iteritems() %} {% if key == partido.key() %} value="{{value.visitante}}" {% endif %} {% endfor %}>
+							<input type="number" min="0" class="form-control" placeholder="Goles Visitante" name="goles-visitante-{{partido.key()}}" {% for key, value in result_dict.iteritems() %} {% if key == partido.key() %} value="{{value.visitante}}" {% endif %} {% endfor %} {% if disabled %} disabled {% endif %}>
 						</td>
 						<td>
 							{{partido.visitante.nombre}}
@@ -42,7 +41,7 @@
 			<input type="hidden" name="key" value="{{pronostico.key()}}">
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-10">
-				  <button type="submit" class="btn btn-default">Guardar</button>
+				  <button type="submit" class="btn btn-default" {% if disabled %} disabled {% endif %}>Guardar</button>
 				</div>
 			</div>
 		</form>
@@ -59,5 +58,5 @@
 				return false;
 			}
 		}
-	</script>	    
+	</script>
 {% endblock%}

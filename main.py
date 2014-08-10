@@ -19,6 +19,7 @@ from google.appengine.api import users
 from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal
 from google.appengine.ext import db
 from HTMLParser import HTMLParser
+from pytz.gae import pytz
 
 import webapp2
 import jinja2
@@ -34,6 +35,8 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 FECHA_LIMITE = 2
+
+TIME_ZONE = pytz.timezone('Europe/Madrid')
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -621,9 +624,15 @@ class FichaPronostico(webapp2.RequestHandler):
                     pronostico_jornada.filter('usuario =', usuario)
                     pronostico_jornada = pronostico_jornada.get()
 
+                    disabled = False
                     fecha_limite = jornada.fecha_inicio
                     if fecha_limite != None:
                         fecha_limite = fecha_limite - datetime.timedelta(hours=2)
+                        print TIME_ZONE.localize(fecha_limite)
+                        print datetime.datetime.now(TIME_ZONE)
+                        print pytz.UTC.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE)
+                        if TIME_ZONE.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE):
+                            disabled = True
 
                     result_dict = {}
 
@@ -636,7 +645,7 @@ class FichaPronostico(webapp2.RequestHandler):
                         pronostico_jornada = PronosticoJornada(usuario=usuario, jornada=jornada)
                         pronostico_jornada.put()
 
-                    content = {'pronostico': pronostico_jornada, 'result_dict': result_dict, 'fecha_limite': fecha_limite, 'usuario': usuario}
+                    content = {'pronostico': pronostico_jornada, 'result_dict': result_dict, 'fecha_limite': fecha_limite, 'disabled': disabled, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/pronostico.html')
                     self.response.write(template.render(content))
                     return
