@@ -6,15 +6,16 @@
 
 {% block admin_content %}
 
+{{pronostico_global.puestos_uefa}}
 	<div class="well">
-		<form class="form-horizontal" role="form" action="/pronosticos/nuevo" method="post">
+		<form class="form-horizontal" role="form" action="/pronostico-global" method="post">
 			<div class="form-group" id="campeon-invierno-group">
 				<label for="campeon-invierno" class="col-sm-3 control-label">Campeón de invierno</label>
 				<div class="col-sm-5">
 					<select class="form-control" name="campeon-invierno">
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
-					  	<option value="{{equipo.key()}}">{{equipo.nombre}}</option>
+					  	<option value="{{equipo.key()}}" {% if equipo.key() == pronostico_global.campeon_invierno.key() %} selected {% endif %}>{{equipo.nombre}}</option>
 					  {% endfor %}
 					</select>
 				</div>
@@ -26,7 +27,7 @@
 					<select class="form-control" name="campeon-liga">
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
-					  	<option value="{{equipo.key()}}">{{equipo.nombre}}</option>
+					  	<option value="{{equipo.key()}}" {% if equipo.key() == pronostico_global.campeon_liga.key() %} selected {% endif %}>{{equipo.nombre}}</option>
 					  {% endfor %}
 					</select>
 				</div>
@@ -38,7 +39,7 @@
 					<select class="form-control" name="campeon-copa">
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
-					  	<option value="{{equipo.key()}}">{{equipo.nombre}}</option>
+					  	<option value="{{equipo.key()}}" {% if equipo.key() == pronostico_global.campeon_copa.key() %} selected {% endif %}>{{equipo.nombre}}</option>
 					  {% endfor %}
 					</select>
 				</div>
@@ -50,7 +51,7 @@
 					<select class="form-control" name="champions">
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
-					  	<option value="{{equipo.key()}}">{{equipo.nombre}}</option>
+					  	<option value="{{equipo.key()}}" {% if equipo.key() == pronostico_global.puesto_champions.key() %} selected {% endif %}>{{equipo.nombre}}</option>
 					  {% endfor %}
 					</select>
 				</div>
