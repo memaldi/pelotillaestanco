@@ -818,23 +818,64 @@ class PronosticosGlobales(webapp2.RequestHandler):
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
                 pronostico_global = PronosticoGlobal.get(self.request.get('key'))
-                pronostico_global.campeon_invierno = Equipo.get(self.request.get('campeon-invierno'))
-                pronostico_global.campeon_copa = Equipo.get(self.request.get('campeon-copa'))
-                pronostico_global.campeon_liga = Equipo.get(self.request.get('campeon-liga'))
-                pronostico_global.puesto_champions = Equipo.get(self.request.get('champions'))
-                uefa_1 = self.request.get('uefa-1')
-                uefa_2 = self.request.get('uefa-2')
+                if self.request.get('campeon-invierno') != '':
+                    pronostico_global.campeon_invierno = Equipo.get(self.request.get('campeon-invierno'))
+                if self.request.get('campeon-copa') != '':
+                    pronostico_global.campeon_copa = Equipo.get(self.request.get('campeon-copa'))
+                if self.request.get('campeon-liga') != '':
+                    pronostico_global.campeon_liga = Equipo.get(self.request.get('campeon-liga'))
+                if self.request.get('champions') != '':
+                    pronostico_global.puesto_champions = Equipo.get(self.request.get('champions'))
+
                 uefa_keys = []
                 for item in pronostico_global.puestos_uefa:
                     uefa_keys.append(item)
-
                 for key in uefa_keys:
                     pronostico_global.puestos_uefa.remove(key)
-                equipo_uefa_1 = Equipo.get(uefa_1)
-                equipo_uefa_2 = Equipo.get(uefa_2)
-                pronostico_global.puestos_uefa.append(equipo_uefa_1.key())
-                pronostico_global.puestos_uefa.append(equipo_uefa_2.key())
+                if self.request.get('uefa-1') != '':
+                    uefa_1 = self.request.get('uefa-1')
+                    equipo_uefa_1 = Equipo.get(uefa_1)
+                    pronostico_global.puestos_uefa.append(equipo_uefa_1.key())
+                if self.request.get('uefa-2') != '':
+                    uefa_2 = self.request.get('uefa-2')
+                    equipo_uefa_2 = Equipo.get(uefa_2)
+                    pronostico_global.puestos_uefa.append(equipo_uefa_2.key())
+
+                descenso_keys = []
+                for item in pronostico_global.puestos_descenso:
+                    descenso_keys.append(item)
+
+                for key in descenso_keys:
+                    pronostico_global.puestos_descenso.remove(key)
+                if self.request.get('descenso-1') != '':
+                    descenso_1 = self.request.get('descenso-1')
+                    equipo_descenso_1 = Equipo.get(descenso_1)
+                    pronostico_global.puestos_descenso.append(equipo_descenso_1.key())
+                if self.request.get('descenso-2') != '':
+                    descenso_2 = self.request.get('descenso-2')
+                    equipo_descenso_2 = Equipo.get(descenso_2)
+                    pronostico_global.puestos_descenso.append(equipo_descenso_2.key())
+                if self.request.get('descenso-3') != '':
+                    descenso_3 = self.request.get('descenso-3')
+                    equipo_descenso_3 = Equipo.get(descenso_3)
+                    pronostico_global.puestos_descenso.append(equipo_descenso_3.key())
+
+                if self.request.get('zamora'):
+                    portero = Jugador.get(self.request.get('zamora'))
+                    pronostico_global.zamora = portero
+
+                if self.request.get('campeon-champions'):
+                    pronostico_global.campeon_champions = Equipo.get(self.request.get('campeon-champions'))
+
+                if self.request.get('campeon-uefa'):
+                    pronostico_global.campeon_uefa = Equipo.get(self.request.get('campeon-uefa'))
+
                 db.put(pronostico_global)
+
+
+
+                self.redirect('/pronostico-global')
+                return
 
         self.redirect('/')
 
