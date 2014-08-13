@@ -10,7 +10,7 @@
 			<div class="form-group" id="campeon-invierno-group">
 				<label for="campeon-invierno" class="col-sm-3 control-label">Campeón de invierno</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="campeon-invierno">
+					<select class="form-control" name="campeon-invierno" {% if disabled %} disabled {% endif %}>
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
 					  	<option value="{{equipo.key()}}" {% if pronostico_global.campeon_invierno %} {% if equipo.key() == pronostico_global.campeon_invierno.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
@@ -22,7 +22,7 @@
 			<div class="form-group" id="campeon-liga-group">
 				<label for="campeon-liga" class="col-sm-3 control-label">Campeón de liga</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="campeon-liga">
+					<select class="form-control" name="campeon-liga" {% if disabled %} disabled {% endif %}>
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
 					  	<option value="{{equipo.key()}}" {% if pronostico_global.campeon_liga %} {% if equipo.key() == pronostico_global.campeon_liga.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
@@ -34,7 +34,7 @@
 			<div class="form-group" id="campeon-copa-group">
 				<label for="campeon-copa" class="col-sm-3 control-label">Campeón de copa</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="campeon-copa">
+					<select class="form-control" name="campeon-copa" {% if disabled %} disabled {% endif %}>
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
 					  	<option value="{{equipo.key()}}" {% if pronostico_global.campeon_copa %} {% if equipo.key() == pronostico_global.campeon_copa.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
@@ -46,7 +46,7 @@
 			<div class="form-group" id="champions-group">
 				<label for="champions" class="col-sm-3 control-label">Puesto champions</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="champions">
+					<select class="form-control" name="champions" {% if disabled %} disabled {% endif %}>
 					  <option value=""></option>
 					  {% for equipo in equipos_liga %}
 					  	<option value="{{equipo.key()}}" {% if pronostico_global.puesto_champions %} {% if equipo.key() == pronostico_global.puesto_champions.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
@@ -59,7 +59,7 @@
 				<div class="form-group" id="uefa-{{n+1}}-group">
 					<label for="uefa-{{n+1}}" class="col-sm-3 control-label">Puesto UEFA ({{n+1}})</label>
 					<div class="col-sm-5">
-						<select class="form-control" name="uefa-{{n+1}}">
+						<select class="form-control" name="uefa-{{n+1}}" {% if disabled %} disabled {% endif %}>
 						  <option value=""></option>
 						  {% for equipo in equipos_liga %}
 						  	{% if n == 0 %}
@@ -77,7 +77,7 @@
 				<div class="form-group" id="descenso-{{n+1}}-group">
 					<label for="descenso-{{n+1}}" class="col-sm-3 control-label">Puesto descenso ({{n+1}})</label>
 					<div class="col-sm-5">
-						<select class="form-control" name="descenso-{{n+1}}">
+						<select class="form-control" name="descenso-{{n+1}}" {% if disabled %} disabled {% endif %}>
 						  <option value=""></option>
 						  {% for equipo in equipos_liga %}
 						  	{% if n == 0 %}
@@ -96,7 +96,7 @@
 			<div class="form-group" id="campeon-champions-group">
 				<label for="campeon-champions" class="col-sm-3 control-label">Campeón champions</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="campeon-champions">
+					<select class="form-control" name="campeon-champions" {% if disabled %} disabled {% endif %}>
 					  <option value=""></option>
 					  {% for equipo in equipos_champions %}
 					  	<option value="{{equipo.key()}}" {% if pronostico_global.campeon_champions %} {% if equipo.key() == pronostico_global.campeon_champions.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
@@ -108,7 +108,7 @@
 			<div class="form-group" id="campeon-uefa-group">
 				<label for="campeon-uefa" class="col-sm-3 control-label">Campeón UEFA</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="campeon-uefa">
+					<select class="form-control" name="campeon-uefa" {% if disabled %} disabled {% endif %}>
 					  <option value=""></option>
 					  {% for equipo in equipos_uefa %}
 					  	<option value="{{equipo.key()}}"  {% if pronostico_global.campeon_uefa %} {% if equipo.key() == pronostico_global.campeon_uefa.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
@@ -120,7 +120,7 @@
 			<div class="form-group" id="zamora-group">
 				<label for="zamora" class="col-sm-3 control-label">Zamora</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="zamora">
+					<select class="form-control" name="zamora" {% if disabled %} disabled {% endif %}>
 					  <option value=""></option>
 					  {% for portero in porteros %}
 					  	<option value="{{portero.key()}}" {% if pronostico_global.zamora %} {% if portero.key() == pronostico_global.zamora.key() %} selected {% endif %} {% endif %}>{{portero.nombre}} ({{portero.equipo.nombre}})</option>
@@ -132,7 +132,7 @@
 			<input type="hidden" name="key" value="{{pronostico_global.key()}}">
 			<div class="form-group">
 				<div class="col-sm-offset-2 col-sm-10">
-				  <button type="submit" class="btn btn-default">Guardar</button>
+				  <button type="submit" class="btn btn-default" {% if disabled %} disabled {% endif %}>Guardar</button>
 				</div>
 			</div>
 		</form>

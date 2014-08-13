@@ -748,9 +748,6 @@ class FichaPronostico(webapp2.RequestHandler):
                     fecha_limite = jornada.fecha_inicio
                     if fecha_limite != None:
                         fecha_limite = fecha_limite - datetime.timedelta(hours=2)
-                        print TIME_ZONE.localize(fecha_limite)
-                        print datetime.datetime.now(TIME_ZONE)
-                        print pytz.UTC.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE)
                         if TIME_ZONE.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE):
                             disabled = True
 
@@ -901,6 +898,15 @@ class PronosticosGlobales(webapp2.RequestHandler):
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
                 if usuario.activo:
+
+                    disabled = False
+                    resultados_pronostico_global = ResultadosPronosticoGlobal.all()
+                    resultados_pronostico_global = resultados_pronostico_global.get()
+                    fecha_limite = resultados_pronostico_global.fecha_limite
+                    if fecha_limite != None:
+                        if TIME_ZONE.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE):
+                            disabled = True
+
                     pronostico_global = PronosticoGlobal.all()
                     pronostico_global.filter("usuario =", usuario)
                     pronostico_global = pronostico_global.get()
@@ -925,7 +931,7 @@ class PronosticosGlobales(webapp2.RequestHandler):
                     porteros.filter("demarcacion =", 'Portero')
                     porteros.order("nombre")
 
-                    content = {'pronostico_global': pronostico_global, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'usuario': usuario}
+                    content = {'pronostico_global': pronostico_global, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'disabled': disabled, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/pronosticos-globales.html')
                     self.response.write(template.render(content))
                     return
