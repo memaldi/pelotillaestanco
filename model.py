@@ -64,3 +64,15 @@ class PronosticoGlobal(db.Model):
 	zamora = db.ReferenceProperty(reference_class=Jugador, collection_name='zamora')
 	campeon_champions = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_champions')
 	campeon_uefa = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_uefa')
+
+class ResultadosPronosticoGlobal(db.Model):
+	fecha_limite = db.DateTimeProperty()
+	campeon_invierno = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_invierno_resultado')
+	campeon_copa = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_copa_resultado')
+	campeon_liga = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_liga_resultado')
+	puesto_champions = db.ReferenceProperty(reference_class=Equipo, collection_name='puesto_champions_resultado')
+	puestos_uefa = db.ListProperty(db.Key)
+	puestos_descenso = db.ListProperty(db.Key)
+	zamora = db.ReferenceProperty(reference_class=Jugador, collection_name='zamora_resultado')
+	campeon_champions = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_champions_resultado')
+	campeon_uefa = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_uefa_resultado')

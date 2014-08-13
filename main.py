@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal
+from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal, ResultadosPronosticoGlobal
 from google.appengine.ext import db
 from HTMLParser import HTMLParser
 from pytz.gae import pytz
@@ -346,11 +346,14 @@ class FichaJornada(webapp2.RequestHandler):
                 if usuario.admin:
                     key = self.request.get('key')
                     numero = self.request.get('numero')
-                    try:
-                        fecha_struct = time.strptime(self.request.get('fecha'), "%Y-%m-%dT%H:%M:%S")
-                    except:
-                        fecha_struct = time.strptime(self.request.get('fecha') + ':00', "%Y-%m-%dT%H:%M:%S")
-                    fecha = datetime.datetime(year=fecha_struct.tm_year, month=fecha_struct.tm_mon, day=fecha_struct.tm_mday, hour=fecha_struct.tm_hour, minute=fecha_struct.tm_min, second=fecha_struct.tm_sec)
+                    if self.request.get('fecha') != '':
+                        try:
+                            fecha_struct = time.strptime(self.request.get('fecha'), "%Y-%m-%dT%H:%M:%S")
+                        except:
+                            fecha_struct = time.strptime(self.request.get('fecha') + ':00', "%Y-%m-%dT%H:%M:%S")
+                        fecha = datetime.datetime(year=fecha_struct.tm_year, month=fecha_struct.tm_mon, day=fecha_struct.tm_mday, hour=fecha_struct.tm_hour, minute=fecha_struct.tm_min, second=fecha_struct.tm_sec)
+                    else:
+                        fecha = None
                     if key != '':
                         jornada = Jornada.get(key)
                         jornada.numero = int(numero)
@@ -588,6 +591,123 @@ class FichaUsuario(webapp2.RequestHandler):
                     self.redirect('/admin/usuarios')
                     return
         self.redirect('/')
+
+class ResultadosPronosticosGlobales(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    pronostico_global = ResultadosPronosticoGlobal.all()
+                    pronostico_global = pronostico_global.get()
+
+                    if pronostico_global == None:
+                        pronostico_global = ResultadosPronosticoGlobal(usuario=usuario)
+                        pronostico_global.put()
+
+                    if pronostico_global.fecha_limite != None:
+                        fecha_str = '%sT%s' % (pronostico_global.fecha_limite.date(), pronostico_global.fecha_limite.time())
+                    else:
+                        fecha_str = None
+
+                    equipos_liga = Equipo.all()
+                    equipos_liga.filter("lfp =", True)
+                    equipos_liga.order("nombre")
+
+                    equipos_champions = Equipo.all()
+                    equipos_champions.filter("champions =", True)
+                    equipos_champions.order("nombre")
+
+                    equipos_uefa = Equipo.all()
+                    equipos_uefa.filter("uefa =", True)
+                    equipos_uefa.order("nombre")
+
+                    porteros = Jugador.all()
+                    porteros.filter("demarcacion =", 'Portero')
+                    porteros.order("nombre")
+
+                    content = {'pronostico_global': pronostico_global, 'fecha_str': fecha_str, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'usuario': usuario}
+                    template = JINJA_ENVIRONMENT.get_template('templates/resultados-pronosticos-globales.html')
+                    self.response.write(template.render(content))
+                    return
+        self.redirect('/')
+
+    def post(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                if usuario.admin:
+                    pronostico_global = ResultadosPronosticoGlobal.get(self.request.get('key'))
+                    if self.request.get('fecha') != '':
+                        try:
+                            fecha_struct = time.strptime(self.request.get('fecha'), "%Y-%m-%dT%H:%M:%S")
+                        except:
+                            fecha_struct = time.strptime(self.request.get('fecha') + ':00', "%Y-%m-%dT%H:%M:%S")
+                        fecha = datetime.datetime(year=fecha_struct.tm_year, month=fecha_struct.tm_mon, day=fecha_struct.tm_mday, hour=fecha_struct.tm_hour, minute=fecha_struct.tm_min, second=fecha_struct.tm_sec)
+                    else:
+                        fecha = None
+                    pronostico_global.fecha_limite = fecha
+                    if self.request.get('campeon-invierno') != '':
+                        pronostico_global.campeon_invierno = Equipo.get(self.request.get('campeon-invierno'))
+                    if self.request.get('campeon-copa') != '':
+                        pronostico_global.campeon_copa = Equipo.get(self.request.get('campeon-copa'))
+                    if self.request.get('campeon-liga') != '':
+                        pronostico_global.campeon_liga = Equipo.get(self.request.get('campeon-liga'))
+                    if self.request.get('champions') != '':
+                        pronostico_global.puesto_champions = Equipo.get(self.request.get('champions'))
+
+                    uefa_keys = []
+                    for item in pronostico_global.puestos_uefa:
+                        uefa_keys.append(item)
+                    for key in uefa_keys:
+                        pronostico_global.puestos_uefa.remove(key)
+                    if self.request.get('uefa-1') != '':
+                        uefa_1 = self.request.get('uefa-1')
+                        equipo_uefa_1 = Equipo.get(uefa_1)
+                        pronostico_global.puestos_uefa.append(equipo_uefa_1.key())
+                    if self.request.get('uefa-2') != '':
+                        uefa_2 = self.request.get('uefa-2')
+                        equipo_uefa_2 = Equipo.get(uefa_2)
+                        pronostico_global.puestos_uefa.append(equipo_uefa_2.key())
+
+                    descenso_keys = []
+                    for item in pronostico_global.puestos_descenso:
+                        descenso_keys.append(item)
+
+                    for key in descenso_keys:
+                        pronostico_global.puestos_descenso.remove(key)
+                    if self.request.get('descenso-1') != '':
+                        descenso_1 = self.request.get('descenso-1')
+                        equipo_descenso_1 = Equipo.get(descenso_1)
+                        pronostico_global.puestos_descenso.append(equipo_descenso_1.key())
+                    if self.request.get('descenso-2') != '':
+                        descenso_2 = self.request.get('descenso-2')
+                        equipo_descenso_2 = Equipo.get(descenso_2)
+                        pronostico_global.puestos_descenso.append(equipo_descenso_2.key())
+                    if self.request.get('descenso-3') != '':
+                        descenso_3 = self.request.get('descenso-3')
+                        equipo_descenso_3 = Equipo.get(descenso_3)
+                        pronostico_global.puestos_descenso.append(equipo_descenso_3.key())
+
+                    if self.request.get('zamora'):
+                        portero = Jugador.get(self.request.get('zamora'))
+                        pronostico_global.zamora = portero
+
+                    if self.request.get('campeon-champions'):
+                        pronostico_global.campeon_champions = Equipo.get(self.request.get('campeon-champions'))
+
+                    if self.request.get('campeon-uefa'):
+                        pronostico_global.campeon_uefa = Equipo.get(self.request.get('campeon-uefa'))
+
+                    db.put(pronostico_global)
+
+                    self.redirect('/admin/resultados-pronostico-global')
+                    return
+
+        self.redirect('/')
+
 
 class Pronosticos(webapp2.RequestHandler):
     def get(self):
@@ -1004,6 +1124,7 @@ app = webapp2.WSGIApplication([
     ('/pronosticos/goleadores', PronosticoGoleadores),
     ('/pronosticos/nuevo', FichaPronostico),
     ('/pronosticos', Pronosticos),
+    ('/admin/resultados-pronostico-global', ResultadosPronosticosGlobales),
     ('/admin/usuarios/nuevo', FichaUsuario),
     ('/admin/usuarios', Usuarios),
     ('/admin/jornadas/goleadores/borrar', BorrarGoleador),
