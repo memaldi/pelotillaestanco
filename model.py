@@ -76,3 +76,8 @@ class ResultadosPronosticoGlobal(db.Model):
 	zamora = db.ReferenceProperty(reference_class=Jugador, collection_name='zamora_resultado')
 	campeon_champions = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_champions_resultado')
 	campeon_uefa = db.ReferenceProperty(reference_class=Equipo, collection_name='campeon_uefa_resultado')
+
+class PuntosJornada(db.Model):
+	usuario = db.ReferenceProperty(reference_class=Usuario)
+	jornada = db.ReferenceProperty(reference_class=Jornada)
+	puntos = db.IntegerProperty()

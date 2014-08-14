@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal, ResultadosPronosticoGlobal
+from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal, ResultadosPronosticoGlobal, PuntosJornada
 from google.appengine.ext import db
 from HTMLParser import HTMLParser
 from pytz.gae import pytz
@@ -284,6 +284,67 @@ class Jornadas(webapp2.RequestHandler):
                     return
         self.redirect('/')
 
+def calcularPuntos(jornada):
+        usuarios = Usuario.all()
+        usuarios.filter("activo =", True)
+
+        for usuario in usuarios:
+            pronostico_jornada = PronosticoJornada.all()
+            pronostico_jornada.filter("jornada =", jornada)
+            pronostico_jornada.filter("usuario =", usuario)
+            pronostico_jornada = pronostico_jornada.get()
+            pronosticos_partidos = PronosticoPartido.all()
+            pronosticos_partidos.filter("pronostico_jornada =", pronostico_jornada)
+            puntos = 0
+            for pronostico_partido in pronosticos_partidos:
+                goles_local = GolesPartidoEquipo.all()
+                goles_local.filter("partido =", pronostico_partido.partido)
+                goles_local.filter("equipo =", pronostico_partido.partido.local)
+                goles_local = goles_local.get()
+
+                goles_visitante = GolesPartidoEquipo.all()
+                goles_visitante.filter("partido =", pronostico_partido.partido)
+                goles_visitante.filter("equipo =", pronostico_partido.partido.visitante)
+                goles_visitante = goles_visitante.get()
+
+                if goles_local.goles == pronostico_partido.goles_local and goles_visitante.goles == pronostico_partido.goles_visitante:
+                    puntos += 8
+                elif goles_local.goles > goles_visitante.goles and pronostico_partido.goles_local > pronostico_partido.goles_visitante:
+                    puntos += 5
+                elif goles_local.goles < goles_visitante.goles and pronostico_partido.goles_local < pronostico_partido.goles_visitante:
+                    puntos += 5
+                elif goles_local.goles == goles_visitante.goles and pronostico_partido.goles_local == pronostico_partido.goles_visitante:
+                    puntos += 5
+
+            pronosticos_jugadores = PronosticoJugador.all()
+            pronosticos_jugadores.filter("pronostico_jornada =", pronostico_jornada)
+            for pronostico_jugador in pronosticos_jugadores:
+                goles_jugador = GolesJornadaJugador.all()
+                goles_jugador.filter("jornada =", jornada)
+                goles_jugador.filter("jugador =", pronostico_jugador.jugador)
+                goles_jugador = goles_jugador.get()
+                if goles_jugador != None:
+                    if goles_jugador.jugador.demarcacion == 'Delantero':
+                        puntos += goles_jugador.goles
+                    elif goles_jugador.jugador.demarcacion == 'Centrocampista':
+                        puntos += goles_jugador.goles * 3
+                    elif goles_jugador.jugador.demarcacion == 'Defensa':
+                        puntos += goles_jugador.goles * 5
+
+            puntos_jornada = PuntosJornada.all()
+            puntos_jornada.filter("usuario =", usuario)
+            puntos_jornada.filter("jornada =", jornada)
+            puntos_jornada = puntos_jornada.get()
+
+            if puntos_jornada == None:
+                puntos_jornada = PuntosJornada()
+                puntos_jornada.usuario = usuario
+                puntos_jornada.jornada = jornada
+                puntos_jornada.put()
+
+            puntos_jornada.puntos = puntos
+            db.put(puntos_jornada)
+
 class FichaJornada(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -427,6 +488,8 @@ class FichaJornada(webapp2.RequestHandler):
                                 golesPartidoLocal.put()
                                 golesPartidoVisitante = GolesPartidoEquipo(equipo=visitante, partido=partido, goles=int(goles_visitante))
                                 golesPartidoVisitante.put()
+                    # calcular los puntos
+                    calcularPuntos(jornada)
                     self.redirect('/admin/jornadas')
                     return
 
@@ -480,6 +543,7 @@ class Goleadores(webapp2.RequestHandler):
                         if key != 'jornada_key':
                             goleador = GolesJornadaJugador.get(key)
                             db.delete(goleador)
+                    calcularPuntos(Jornada.get(self.request.get('jornada_key')))
                     self.redirect('/admin/jornadas/goleadores?key=%s' % self.request.get('jornada_key'))
                     return
 
@@ -494,6 +558,7 @@ class FichaGoleador(webapp2.RequestHandler):
                     key = self.request.get('key')
                     jornada_key = self.request.get('jornada')
                     jugadores = Jugador.all()
+                    jugadores.order("nombre")
                     if key != '':
                         goleador = GolesJornadaJugador.get(key)
                         content = {'jugadores': jugadores, 'jornada_key': jornada_key, 'goleador': goleador, 'usuario': usuario}
@@ -527,6 +592,7 @@ class FichaGoleador(webapp2.RequestHandler):
                         jornada = Jornada.get(jornada_key)
                         goleador = GolesJornadaJugador(jornada=jornada, jugador=jugador, goles=int(goles))
                         goleador.put()
+                    calcularPuntos(goleador.jornada)
                     self.redirect('/admin/jornadas/goleadores?key=%s' % jornada_key)
                     return
         self.redirect('/')
@@ -542,6 +608,7 @@ class BorrarGoleador(webapp2.RequestHandler):
                     key = self.request.get('key')
                     goleador = GolesJornadaJugador.get(key)
                     db.delete(goleador)
+                    calcularPuntos(Jornada.get(jornada_key))
                     self.redirect('/admin/jornadas/goleadores?key=%s' % jornada_key)
                     return
         self.redirect('/')

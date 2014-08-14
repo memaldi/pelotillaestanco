@@ -1,5 +1,5 @@
 {% extends "templates/panel-admin.html" %}
-{% block page_title %}Equipos{% endblock %}
+{% block page_title %}Goleadores{% endblock %}
 {% block admin_content %}
 
 <div class="btn-toolbar" role="toolbar">
@@ -41,7 +41,7 @@
       var id = $(this).data('id');
       $("#accept-button").attr('href', '/admin/jornadas/goleadores/borrar?key=' + $(this).data('id') + '&jornada={{jornada_key}}');
     });
-  }); 
+  });
 
   function borrarGoleadores() {
     var checkboxList = $(".checkboxGoleador");
@@ -60,7 +60,7 @@
     var checkboxList = $(".checkboxGoleador");
     var status = $("#select-all")[0].checked;
     checkboxList.each(function() {
-      var id = this.id;   
+      var id = this.id;
       $("#" + id).prop('checked', status);
     });
   }
