@@ -81,3 +81,7 @@ class PuntosJornada(db.Model):
 	usuario = db.ReferenceProperty(reference_class=Usuario)
 	jornada = db.ReferenceProperty(reference_class=Jornada)
 	puntos = db.IntegerProperty()
+
+class PuntosGlobales(db.Model):
+	usuario = db.ReferenceProperty(reference_class=Usuario)
+	puntos = db.IntegerProperty()

@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 from google.appengine.api import users
-from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal, ResultadosPronosticoGlobal, PuntosJornada
+from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo, GolesJornadaJugador, PronosticoJornada, PronosticoPartido, PronosticoJugador, PronosticoGlobal, ResultadosPronosticoGlobal, PuntosJornada, PuntosGlobales
 from google.appengine.ext import db
 from HTMLParser import HTMLParser
 from pytz.gae import pytz
@@ -659,6 +659,60 @@ class FichaUsuario(webapp2.RequestHandler):
                     return
         self.redirect('/')
 
+def calcularPuntosGlobales():
+    resultados = ResultadosPronosticoGlobal.all()
+    resultados = resultados.get()
+
+    puestos_uefa = []
+    for puesto_uefa in resultados.puestos_uefa:
+        puestos_uefa.append(puesto_uefa)
+
+    puestos_descenso = []
+    for puesto_descenso in resultados.puestos_descenso:
+        puestos_descenso.append(puesto_descenso)
+
+    for pronostico_global in PronosticoGlobal.all():
+        puntos = 0
+        if pronostico_global.campeon_invierno != None and resultados.campeon_invierno != None:
+            if pronostico_global.campeon_invierno.key() == resultados.campeon_invierno.key():
+                puntos += 10
+        if pronostico_global.campeon_liga != None and resultados.campeon_liga != None:
+            if pronostico_global.campeon_liga.key() == resultados.campeon_liga.key():
+                puntos += 10
+        if pronostico_global.campeon_copa != None and resultados.campeon_copa != None:
+            if pronostico_global.campeon_copa.key() == resultados.campeon_copa.key():
+                puntos += 10
+        if pronostico_global.campeon_champions != None and resultados.campeon_champions != None:
+            if pronostico_global.campeon_champions.key() == resultados.campeon_champions.key():
+                puntos += 10
+        if pronostico_global.campeon_uefa != None and resultados.campeon_uefa != None:
+            if pronostico_global.campeon_uefa.key() == resultados.campeon_uefa.key():
+                puntos += 10
+        if pronostico_global.zamora != None and resultados.zamora != None:
+            if pronostico_global.zamora.key() == resultados.zamora.key():
+                puntos += 10
+        if pronostico_global.puesto_champions != None and resultados.puesto_champions != None:
+            if pronostico_global.puesto_champions.key() == resultados.puesto_champions():
+                puntos += 10
+        for puesto_uefa in pronostico_global.puestos_uefa:
+            if puesto_uefa in puestos_uefa:
+                puntos += 10
+        for puesto_descenso in pronostico_global.puestos_descenso:
+            if puesto_descenso in puestos_descenso:
+                puntos += 10
+
+        puntos_globales = PuntosGlobales.all()
+        puntos_globales.filter("usuario =", pronostico_global.usuario)
+        puntos_globales = puntos_globales.get()
+
+        if puntos_globales == None:
+            puntos_globales = PuntosGlobales()
+            puntos_globales.usuario = pronostico_global.usuario
+            puntos_globales.put()
+
+        puntos_globales.puntos = puntos
+        db.put(puntos_globales)
+
 class ResultadosPronosticosGlobales(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -769,6 +823,8 @@ class ResultadosPronosticosGlobales(webapp2.RequestHandler):
                         pronostico_global.campeon_uefa = Equipo.get(self.request.get('campeon-uefa'))
 
                     db.put(pronostico_global)
+
+                    calcularPuntosGlobales()
 
                     self.redirect('/admin/resultados-pronostico-global')
                     return
@@ -1065,11 +1121,58 @@ class PronosticosGlobales(webapp2.RequestHandler):
 
                 db.put(pronostico_global)
 
-
-
                 self.redirect('/pronostico-global')
                 return
 
+        self.redirect('/')
+
+class Clasificacion(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                puntos_jornadas_dict = {}
+                puntos_globales_dict = {}
+                puntos_totales = {}
+                usuarios_dict = {}
+                usuarios = Usuario.all()
+                usuarios.filter("activo =", True)
+
+                for usuario in usuarios:
+                    usuarios_dict[usuario.key()] = usuario
+
+                    puntos = 0
+                    puntos_jornadas = PuntosJornada.all()
+                    puntos_jornadas.filter("usuario =", usuario)
+                    for puntos_jornada in puntos_jornadas:
+                        puntos += puntos_jornada.puntos
+                    puntos_jornadas_dict[usuario.key()] = puntos
+
+                    puntos_globales = PuntosGlobales.all()
+                    puntos_globales.filter("usuario =", usuario)
+                    puntos_globales = puntos_globales.get()
+
+                    puntos_globales_dict[usuario.key()] = puntos_globales.puntos
+
+                    puntos_totales[usuario.key()] = puntos + puntos_globales.puntos
+
+                content = {'puntos_jornadas': puntos_jornadas_dict, 'puntos_globales': puntos_globales_dict, 'puntos_totales': puntos_totales, 'usuarios': usuarios_dict, 'usuario': usuario}
+
+                template = JINJA_ENVIRONMENT.get_template('templates/clasificacion.html')
+                self.response.write(template.render(content))
+                return
+        self.redirect('/')
+
+class Resultados(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                template = JINJA_ENVIRONMENT.get_template('templates/resultados.html')
+                self.response.write(template.render(content))
+                return
         self.redirect('/')
 
 # IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
@@ -1193,6 +1296,8 @@ class CargarJugadores(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/cargarjugadores', CargarJugadores),
     ('/cargarjornadas', CargarJornadas),
+    ('/resultados', Resultados),
+    ('/clasificacion', Clasificacion),
     ('/pronostico-global', PronosticosGlobales),
     ('/pronosticos/goleadores', PronosticoGoleadores),
     ('/pronosticos/nuevo', FichaPronostico),

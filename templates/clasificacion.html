@@ -1,0 +1,35 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+    {% if equipo_nombre %}
+        Editar {{ equipo_nombre }}
+    {% else %}
+        Clasificación
+    {% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+
+<table class="table table-striped" id="table">
+    <thead>
+        <tr>
+          <th>Jugador</th>
+          <th>Puntos Jornadas</th>
+          <th>Puntos Globales</th>
+          <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in puntos_totales|dictsort(false, 'value') %}
+            <tr>
+                <td>{{usuarios.get(item.0).nick}}</td>
+                <td>{{puntos_jornadas.get(item.0)}}</td>
+                <td>{{puntos_globales.get(item.0)}}<td>
+                <td><b>{{item.1}}</b></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}
