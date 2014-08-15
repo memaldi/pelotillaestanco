@@ -29,3 +29,8 @@ indexes:
   properties:
   - name: demarcacion
   - name: nombre
+
+- kind: Usuario
+  properties:
+  - name: activo
+  - name: nick

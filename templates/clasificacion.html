@@ -20,7 +20,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for item in puntos_totales|dictsort(false, 'value') %}
+        {% for item in puntos_totales|dictsort(false, 'value')|reverse %}
             <tr>
                 <td>{{usuarios.get(item.0).nick}}</td>
                 <td>{{puntos_jornadas.get(item.0)}}</td>

@@ -4,7 +4,7 @@
 	{% if equipo_nombre %}
 		Editar {{ equipo_nombre }}
 	{% else %}
-		Nuevo equipo
+		Nuevo usuario
 	{% endif %}
 {% endblock %}}
 
@@ -35,7 +35,7 @@
 				  </div>
 				</div>
 			</div>
-			{% if equipo %}
+			{% if usuario %}
 			<input type="hidden" name="key" value="{{usuario_item.key()}}">
 			{% endif%}
 			<div class="form-group">
@@ -47,5 +47,5 @@
 	</div>
 {% endblock %}
 {% block scripts %}
-	
+
 {% endblock%}

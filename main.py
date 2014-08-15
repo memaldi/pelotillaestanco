@@ -649,8 +649,11 @@ class FichaUsuario(webapp2.RequestHandler):
             if usuario != None:
                 if usuario.admin:
                     key = self.request.get('key')
-                    admin = self.request.get('admin')
-                    activo = self.request.get('activo')
+                    admin, activo = False, False
+                    if self.request.get('admin'):
+                        admin = True
+                    if self.request.get('activo'):
+                        activo = True
                     usuario = Usuario.get(key)
                     usuario.activo = activo
                     usuario.admin = admin
@@ -1130,8 +1133,8 @@ class Clasificacion(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
         if user:
-            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
-            if usuario != None:
+            usuario_current = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario_current != None:
                 puntos_jornadas_dict = {}
                 puntos_globales_dict = {}
                 puntos_totales = {}
@@ -1153,11 +1156,14 @@ class Clasificacion(webapp2.RequestHandler):
                     puntos_globales.filter("usuario =", usuario)
                     puntos_globales = puntos_globales.get()
 
-                    puntos_globales_dict[usuario.key()] = puntos_globales.puntos
+                    if puntos_globales != None:
+                        puntos_globales_dict[usuario.key()] = puntos_globales.puntos
+                        puntos_totales[usuario.key()] = puntos + puntos_globales.puntos
+                    else:
+                        puntos_globales_dict[usuario.key()] = 0
+                        puntos_totales[usuario.key()] = puntos
 
-                    puntos_totales[usuario.key()] = puntos + puntos_globales.puntos
-
-                content = {'puntos_jornadas': puntos_jornadas_dict, 'puntos_globales': puntos_globales_dict, 'puntos_totales': puntos_totales, 'usuarios': usuarios_dict, 'usuario': usuario}
+                content = {'puntos_jornadas': puntos_jornadas_dict, 'puntos_globales': puntos_globales_dict, 'puntos_totales': puntos_totales, 'usuarios': usuarios_dict, 'usuario': usuario_current}
 
                 template = JINJA_ENVIRONMENT.get_template('templates/clasificacion.html')
                 self.response.write(template.render(content))
@@ -1170,7 +1176,82 @@ class Resultados(webapp2.RequestHandler):
         if user:
             usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
             if usuario != None:
+                jornadas = Jornada.all()
+                jornadas.order("numero")
+                content = {'jornadas': jornadas, 'usuario': usuario}
                 template = JINJA_ENVIRONMENT.get_template('templates/resultados.html')
+                self.response.write(template.render(content))
+                return
+        self.redirect('/')
+
+class ResultadosJornada(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                jornada = Jornada.get(self.request.get('key'))
+
+                partidos = Partido.all()
+                partidos.filter("jornada =", jornada)
+
+                goles_jugadores = GolesJornadaJugador.all()
+                goles_jugadores.filter("jornada =", jornada)
+                goles = {}
+                for goles_jugador in goles_jugadores:
+                    goles[goles_jugador.jugador.key()] = goles_jugador.goles
+
+                resultados = {}
+                for partido in partidos:
+                    goles_partidos = GolesPartidoEquipo.all()
+                    goles_partidos.filter("partido =", partido)
+                    goles_partidos.filter("equipo =", partido.local)
+                    goles_local = goles_partidos.get()
+
+                    goles_partidos = GolesPartidoEquipo.all()
+                    goles_partidos.filter("partido =", partido)
+                    goles_partidos.filter("equipo =", partido.visitante)
+                    goles_visitante = goles_partidos.get()
+
+                    if goles_local != None and goles_visitante != None:
+                        resultados[partido.key()] = {}
+                        resultados[partido.key()]['local'] = goles_local.goles
+                        resultados[partido.key()]['visitante'] = goles_visitante.goles
+
+
+
+                usuario_dict = {}
+                usuarios = Usuario.all()
+                usuarios.filter("activo =", True)
+                usuarios.order("nick")
+
+                for item in usuarios:
+                    pronostico_jornada = PronosticoJornada.all()
+                    pronostico_jornada.filter("usuario =", item)
+                    pronostico_jornada.filter("jornada =", jornada)
+                    pronostico_jornada = pronostico_jornada.get()
+
+                    pronosticos = PronosticoPartido.all()
+                    pronosticos.filter("pronostico_jornada =", pronostico_jornada)
+
+                    pronosticos_dict = {}
+                    for pronostico in pronosticos:
+                        pronosticos_dict[pronostico.partido.key()] = {}
+                        pronosticos_dict[pronostico.partido.key()]['local'] = pronostico.goles_local
+                        pronosticos_dict[pronostico.partido.key()]['visitante'] = pronostico.goles_visitante
+
+                    pronostico_jugadores = PronosticoJugador.all()
+                    pronostico_jugadores.filter("pronostico_jornada =", pronostico_jornada)
+                    pronosticos_dict['jugadores'] = []
+                    for pronostico_jugador in pronostico_jugadores:
+                        pronosticos_dict['jugadores'].append(pronostico_jugador.jugador)
+
+                    usuario_dict[item.nick] = pronosticos_dict
+
+                print usuario_dict
+                content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'usuario': usuario}
+
+                template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
                 self.response.write(template.render(content))
                 return
         self.redirect('/')
@@ -1296,6 +1377,7 @@ class CargarJugadores(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/cargarjugadores', CargarJugadores),
     ('/cargarjornadas', CargarJornadas),
+    ('/resultados/jornada', ResultadosJornada),
     ('/resultados', Resultados),
     ('/clasificacion', Clasificacion),
     ('/pronostico-global', PronosticosGlobales),
