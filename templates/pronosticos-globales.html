@@ -1,7 +1,7 @@
 {% extends "templates/panel-admin.html" %}
 
 {% block page_title %}
-	Pronósticos globales
+	Pronósticos globales {% if fecha_limit != None %} (Fecha límite:  {{fecha_limite}}){% endif %}
 {% endblock %}}
 
 {% block admin_content %}

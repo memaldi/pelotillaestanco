@@ -1,0 +1,20 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+    {% if equipo_nombre %}
+        Editar {{ equipo_nombre }}
+    {% else %}
+        Resultados
+    {% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+
+<ul>
+    {% for jornada in jornadas %}
+        <li><a href="/resultados/jornada?key={{jornada.key()}}">Jornada {{jornada.numero}}</a></li>
+    {% endfor %}
+</ul>
+
+
+{% endblock %}

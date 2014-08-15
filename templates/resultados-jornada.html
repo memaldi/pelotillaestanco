@@ -1,0 +1,86 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+    {% if equipo_nombre %}
+        Editar {{ equipo_nombre }}
+    {% else %}
+        Resultados Jornada
+    {% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+
+{% set count = 0 %}
+
+<table class="table table-striped" id="table">
+    <thead>
+        <tr>
+          <th>Jugador</th>
+          <th>Puntos</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in puntos_jornadas|dictsort(false, 'value')|reverse %}
+            <tr>
+                <td>{{item.0}}</td>
+                <td><b>{{item.1}}</b></td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% for item in usuarios|dictsort(false) %}
+    {% if count == 0 %}
+    <div class="row">
+    {% endif %}
+    <div class="col-md-4">
+        <table style="font-size:small" class="table table-striped" id="table_resultados">
+            <thead>
+                <tr>
+                    <th colspan="7">{{item.0}}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for partido in partidos %}
+                <tr>
+                    <td>{{partido.local.nombre}}</td>
+                    <td>({% if resultados.get(partido.key()) %} {{resultados.get(partido.key()).get('local')}} {% endif %})</td>
+                    <td>{% if item.1.get(partido.key()) %} {{item.1.get(partido.key()).get('local')}} {% endif %}</td>
+                    <td>-</td>
+                    <td>{% if item.1.get(partido.key()) %} {{item.1.get(partido.key()).get('visitante')}} {% endif %}</td>
+                    <td>({% if resultados.get(partido.key()) %} {{resultados.get(partido.key()).get('visitante')}} {% endif %})</td>
+                    <td>{{partido.visitante.nombre}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <table style="font-size:small" class="table table-striped" id="table_goleadores">
+            <thead>
+                <tr>
+                    <th colspan="2">Goleadores</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jugador in item.1.get('jugadores') %}
+                <tr>
+                    <td>{{jugador.nombre}} ({{jugador.equipo.nombre}})</td>
+                    <td>( {% if goles.get(jugador.key()) %}{{goles.get(jugador.key())}}{% else %}0{% endif %} )</td>
+                </tr>
+                {% endfor%}
+            </tbody>
+        </table>
+    </div>
+
+
+    {% if count == 2 or loop.last %}
+        {% set count = 0 %}
+        </div>
+        <hr />
+    {% else %}
+        {% set count = count + 1 %}
+    {% endif %}
+
+{% endfor %}
+
+{% endblock %}

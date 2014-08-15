@@ -210,7 +210,8 @@ class FichaEquipo(webapp2.RequestHandler):
                         content = {'equipo': equipo, 'usuario': usuario}
                         self.response.write(template.render(content))
                     else:
-                        self.response.write(template.render())
+                        content = {'usuario': usuario}
+                        self.response.write(template.render(content))
                     return
         self.redirect('/')
 
@@ -1028,7 +1029,9 @@ class PronosticosGlobales(webapp2.RequestHandler):
                     disabled = False
                     resultados_pronostico_global = ResultadosPronosticoGlobal.all()
                     resultados_pronostico_global = resultados_pronostico_global.get()
-                    fecha_limite = resultados_pronostico_global.fecha_limite
+                    fecha_limite = None
+                    if resultados_pronostico_global != None:
+                        fecha_limite = resultados_pronostico_global.fecha_limite
                     if fecha_limite != None:
                         if TIME_ZONE.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE):
                             disabled = True
@@ -1057,7 +1060,7 @@ class PronosticosGlobales(webapp2.RequestHandler):
                     porteros.filter("demarcacion =", 'Portero')
                     porteros.order("nombre")
 
-                    content = {'pronostico_global': pronostico_global, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'disabled': disabled, 'usuario': usuario}
+                    content = {'pronostico_global': pronostico_global, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'disabled': disabled, 'fecha_limite': fecha_limite, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/pronosticos-globales.html')
                     self.response.write(template.render(content))
                     return
@@ -1218,7 +1221,7 @@ class ResultadosJornada(webapp2.RequestHandler):
                         resultados[partido.key()]['local'] = goles_local.goles
                         resultados[partido.key()]['visitante'] = goles_visitante.goles
 
-
+                puntos_jornadas = {}
 
                 usuario_dict = {}
                 usuarios = Usuario.all()
@@ -1248,8 +1251,17 @@ class ResultadosJornada(webapp2.RequestHandler):
 
                     usuario_dict[item.nick] = pronosticos_dict
 
+                    puntos_jornada = PuntosJornada.all()
+                    puntos_jornada.filter("jornada =", jornada)
+                    puntos_jornada.filter("usuario =", item)
+                    puntos_jornada = puntos_jornada.get()
+                    if puntos_jornada != None:
+                        puntos_jornadas[item.nick] = puntos_jornada.puntos
+                    else:
+                        puntos_jornadas[item.nick] = 0
+
                 print usuario_dict
-                content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'usuario': usuario}
+                content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'puntos_jornadas': puntos_jornadas, 'usuario': usuario}
 
                 template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
                 self.response.write(template.render(content))
@@ -1323,7 +1335,7 @@ class CargarJornadas(webapp2.RequestHandler):
                 else:
                     break
 
-            time.sleep(10)
+            #time.sleep(10)
             jornadas = Jornada.all()
             jornadas.order("numero")
             for jornada in jornadas:
