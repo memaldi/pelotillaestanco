@@ -784,12 +784,20 @@ class ResultadosPronosticosGlobales(webapp2.RequestHandler):
                     pronostico_global.fecha_limite = fecha
                     if self.request.get('campeon-invierno') != '':
                         pronostico_global.campeon_invierno = Equipo.get(self.request.get('campeon-invierno'))
+                    else:
+                        pronostico_global.campeon_invierno = None
                     if self.request.get('campeon-copa') != '':
                         pronostico_global.campeon_copa = Equipo.get(self.request.get('campeon-copa'))
+                    else:
+                        pronostico_global.campeon_copa = None
                     if self.request.get('campeon-liga') != '':
                         pronostico_global.campeon_liga = Equipo.get(self.request.get('campeon-liga'))
+                    else:
+                        pronostico_global.campeon_liga = None
                     if self.request.get('champions') != '':
                         pronostico_global.puesto_champions = Equipo.get(self.request.get('champions'))
+                    else:
+                        pronostico_global.puesto_champions = None
 
                     uefa_keys = []
                     for item in pronostico_global.puestos_uefa:
@@ -827,12 +835,18 @@ class ResultadosPronosticosGlobales(webapp2.RequestHandler):
                     if self.request.get('zamora'):
                         portero = Jugador.get(self.request.get('zamora'))
                         pronostico_global.zamora = portero
+                    else:
+                        pronostico_global.zamora = None
 
                     if self.request.get('campeon-champions'):
                         pronostico_global.campeon_champions = Equipo.get(self.request.get('campeon-champions'))
+                    else:
+                        pronostico_global.campeon_champions = None
 
                     if self.request.get('campeon-uefa'):
                         pronostico_global.campeon_uefa = Equipo.get(self.request.get('campeon-uefa'))
+                    else:
+                        pronostico_global.campeon_uefa = None
 
                     db.put(pronostico_global)
 
@@ -1086,12 +1100,20 @@ class PronosticosGlobales(webapp2.RequestHandler):
                 pronostico_global = PronosticoGlobal.get(self.request.get('key'))
                 if self.request.get('campeon-invierno') != '':
                     pronostico_global.campeon_invierno = Equipo.get(self.request.get('campeon-invierno'))
+                else:
+                    pronostico_global.campeon_invierno = None
                 if self.request.get('campeon-copa') != '':
                     pronostico_global.campeon_copa = Equipo.get(self.request.get('campeon-copa'))
+                else:
+                    pronostico_global.campeon_copa = None
                 if self.request.get('campeon-liga') != '':
                     pronostico_global.campeon_liga = Equipo.get(self.request.get('campeon-liga'))
+                else:
+                    pronostico_global.campeon_liga = None
                 if self.request.get('champions') != '':
                     pronostico_global.puesto_champions = Equipo.get(self.request.get('champions'))
+                else:
+                    pronostico_global.puesto_champions = None
 
                 uefa_keys = []
                 for item in pronostico_global.puestos_uefa:
@@ -1129,12 +1151,18 @@ class PronosticosGlobales(webapp2.RequestHandler):
                 if self.request.get('zamora'):
                     portero = Jugador.get(self.request.get('zamora'))
                     pronostico_global.zamora = portero
+                else:
+                    pronostico_global.zamora = None
 
                 if self.request.get('campeon-champions'):
                     pronostico_global.campeon_champions = Equipo.get(self.request.get('campeon-champions'))
+                else:
+                    pronostico_global.campeon_champions = None
 
                 if self.request.get('campeon-uefa'):
                     pronostico_global.campeon_uefa = Equipo.get(self.request.get('campeon-uefa'))
+                else:
+                    pronostico_global.campeon_uefa = None
 
                 db.put(pronostico_global)
 
