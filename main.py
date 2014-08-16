@@ -963,15 +963,18 @@ class PronosticoGoleadores(webapp2.RequestHandler):
                     pronosticos_jugadores = PronosticoJugador.all()
                     pronosticos_jugadores.filter("pronostico_jornada =", pronostico_jornada)
 
-                    defensas = Jugador.all()
-                    defensas.filter("demarcacion =", 'Defensa')
-                    defensas.order("nombre")
-                    centrocampistas = Jugador.all()
-                    centrocampistas.filter("demarcacion =", 'Centrocampista')
-                    centrocampistas.order("nombre")
-                    delanteros = Jugador.all()
-                    delanteros.filter("demarcacion =", 'Delantero')
-                    delanteros.order("nombre")
+                    jugadores = Jugador.all()
+                    defensas = []
+                    delanteros = []
+                    centrocampistas = []
+                    for jugador in jugadores:
+                        if jugador.demarcacion == 'Defensa':
+                            defensas.append(jugador)
+                        elif jugador.demarcacion == 'Centrocampista':
+                            centrocampistas.append(jugador)
+                        elif jugador.demarcacion == 'Delantero':
+                            delanteros.append(jugador)
+
                     content = {'defensas': defensas, 'centrocampistas': centrocampistas, 'delanteros': delanteros, 'jornada': jornada, 'pronosticos_jugadores': pronosticos_jugadores, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/pronostico-goleadores.html')
                     self.response.write(template.render(content))
