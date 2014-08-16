@@ -375,8 +375,8 @@ class FichaJornada(webapp2.RequestHandler):
                             golesVisitante = golesPartido.filter("equipo =", partido.visitante)
                             if golesLocal.get() != None and golesVisitante.get() != None:
                                 print golesLocal.get().goles
-                                result_dict[partido.key()]['local'] = int(golesLocal.get().goles)
-                                result_dict[partido.key()]['visitante'] = int(golesVisitante.get().goles)
+                                result_dict[partido.key()]['local'] = golesLocal.get().goles
+                                result_dict[partido.key()]['visitante'] = golesVisitante.get().goles
                             else:
                                 result_dict[partido.key()]['local'] = None
                                 result_dict[partido.key()]['visitante'] = None
@@ -435,33 +435,41 @@ class FichaJornada(webapp2.RequestHandler):
 
                             local = Equipo.get(local_id)
                             visitante = Equipo.get(visitante_id)
-                            if goles_local != '' and goles_visitante != '':
 
-                                golesPartidoLocal = GolesPartidoEquipo.all()
-                                golesPartidoLocal.filter("partido =", partido)
-                                golesPartidoLocal.filter("equipo =", local)
-                                golesPartidoLocal = golesPartidoLocal.get()
+                            golesPartidoLocal = GolesPartidoEquipo.all()
+                            golesPartidoLocal.filter("partido =", partido)
+                            golesPartidoLocal.filter("equipo =", local)
+                            golesPartidoLocal = golesPartidoLocal.get()
 
-                                golesPartidoVisitante = GolesPartidoEquipo.all()
-                                golesPartidoVisitante.filter("partido =", partido)
-                                golesPartidoVisitante.filter("equipo =", visitante)
-                                golesPartidoVisitante = golesPartidoVisitante.get()
+                            golesPartidoVisitante = GolesPartidoEquipo.all()
+                            golesPartidoVisitante.filter("partido =", partido)
+                            golesPartidoVisitante.filter("equipo =", visitante)
+                            golesPartidoVisitante = golesPartidoVisitante.get()
 
-                                if golesPartidoLocal == None:
-                                    golesPartidoLocal = GolesPartidoEquipo(equipo=local, partido=partido, goles=int(goles_local))
-                                    golesPartidoLocal.put()
-                                else:
-                                    golesPartidoLocal.goles = int(goles_local)
-                                    golesPartidoLocal.equipo = local
-                                    db.put(golesPartidoLocal)
+                            if goles_local == '':
+                                goles_local = None
+                            else:
+                                goles_local = int(goles_local)
+                            if goles_visitante == '':
+                                goles_visitante = None
+                            else:
+                                goles_visitante = int(goles_visitante)
 
-                                if golesPartidoVisitante == None:
-                                    golesPartidoVisitante = GolesPartidoEquipo(equipo=visitante, partido=partido, goles=int(goles_visitante))
-                                    golesPartidoVisitante.put()
-                                else:
-                                    golesPartidoVisitante.goles = int(goles_visitante)
-                                    golesPartidoVisitante.equipo = visitante
-                                    db.put(golesPartidoVisitante)
+                            if golesPartidoLocal == None:
+                                golesPartidoLocal = GolesPartidoEquipo(equipo=local, partido=partido, goles=goles_local)
+                                golesPartidoLocal.put()
+                            else:
+                                golesPartidoLocal.goles = goles_local
+                                golesPartidoLocal.equipo = local
+                                db.put(golesPartidoLocal)
+
+                            if golesPartidoVisitante == None:
+                                golesPartidoVisitante = GolesPartidoEquipo(equipo=visitante, partido=partido, goles=goles_visitante)
+                                golesPartidoVisitante.put()
+                            else:
+                                golesPartidoVisitante.goles = goles_visitante
+                                golesPartidoVisitante.equipo = visitante
+                                db.put(golesPartidoVisitante)
 
                             partido.local = local
                             partido.visitante = visitante
