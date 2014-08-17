@@ -1136,7 +1136,14 @@ class PronosticosGlobales(webapp2.RequestHandler):
                         pronostico_global = PronosticoGlobal(usuario=usuario)
                         pronostico_global.put()
 
-                    equipos_liga = Equipo.all()
+                    equipos = Equipo.all()
+                    equipos.order("nombre")
+
+                    equipos_list = []
+                    for equipo in equipos:
+                        equipos_list.append(equipo)
+
+                    '''equipos_liga = Equipo.all()
                     equipos_liga.filter("lfp =", True)
                     equipos_liga.order("nombre")
 
@@ -1147,12 +1154,13 @@ class PronosticosGlobales(webapp2.RequestHandler):
                     equipos_uefa = Equipo.all()
                     equipos_uefa.filter("uefa =", True)
                     equipos_uefa.order("nombre")
-
+                    '''
                     porteros = Jugador.all()
                     porteros.filter("demarcacion =", 'Portero')
                     porteros.order("nombre")
 
-                    content = {'pronostico_global': pronostico_global, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'disabled': disabled, 'fecha_limite': fecha_limite, 'usuario': usuario}
+
+                    content = {'pronostico_global': pronostico_global, 'equipos': equipos_list, 'porteros': porteros, 'disabled': disabled, 'fecha_limite': fecha_limite, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/pronosticos-globales.html')
                     self.response.write(template.render(content))
                     return
@@ -1181,6 +1189,28 @@ class PronosticosGlobales(webapp2.RequestHandler):
                     pronostico_global.puesto_champions = Equipo.get(self.request.get('champions'))
                 else:
                     pronostico_global.puesto_champions = None
+
+                champions_keys = []
+                for item in pronostico_global.puestos_champions:
+                    champions_keys.append(item)
+                for key in champions_keys:
+                    pronostico_global.puestos_champions.remove(key)
+                if self.request.get('champions-1') != '':
+                    champions_1 = self.request.get('champions-1')
+                    equipos_champions_1 = Equipo.get(champions_1)
+                    pronostico_global.puestos_champions.append(equipos_champions_1.key())
+                if self.request.get('champions-2') != '':
+                    champions_2 = self.request.get('champions-2')
+                    equipos_champions_2 = Equipo.get(champions_2)
+                    pronostico_global.puestos_champions.append(equipos_champions_2.key())
+                if self.request.get('champions-3') != '':
+                    champions_3 = self.request.get('champions-3')
+                    equipos_champions_3 = Equipo.get(champions_3)
+                    pronostico_global.puestos_champions.append(equipos_champions_3.key())
+                if self.request.get('champions-4') != '':
+                    champions_4 = self.request.get('champions-4')
+                    equipos_champions_4 = Equipo.get(champions_4)
+                    pronostico_global.puestos_champions.append(equipos_champions_4.key())
 
                 uefa_keys = []
                 for item in pronostico_global.puestos_uefa:

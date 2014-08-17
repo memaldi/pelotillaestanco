@@ -141,7 +141,7 @@
           <select class="form-control" name="campeon-uefa">
             <option value=""></option>
             {% for equipo in equipos %}
-              {% if equipo.uefa %}
+              {% if equipo.uefa == True or equipo.champions == True %}
                 <option value="{{equipo.key()}}"  {% if pronostico_global.campeon_uefa %} {% if equipo.key() == pronostico_global.campeon_uefa.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
               {% endif %}
             {% endfor %}
