@@ -15,6 +15,7 @@
 <table class="table table-striped" id="table">
     <thead>
         <tr>
+          <th>#</th>
           <th>Jugador</th>
           <th>Puntos</th>
         </tr>
@@ -22,6 +23,7 @@
     <tbody>
         {% for item in puntos_jornadas|dictsort(false, 'value')|reverse %}
             <tr>
+                <td>{{loop.index}}</td>
                 <td>{{item.0}}</td>
                 <td><b>{{item.1}}</b></td>
             </tr>

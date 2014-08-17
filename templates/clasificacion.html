@@ -13,6 +13,7 @@
 <table class="table table-striped" id="table">
     <thead>
         <tr>
+          <th>#</th>
           <th>Jugador</th>
           <th>Puntos Jornadas</th>
           <th>Puntos Globales</th>
@@ -22,6 +23,7 @@
     <tbody>
         {% for item in puntos_totales|dictsort(false, 'value')|reverse %}
             <tr>
+                <td>{{loop.index}}</td>
                 <td>{{usuarios.get(item.0).nick}}</td>
                 <td>{{puntos_jornadas.get(item.0)}}</td>
                 <td>{{puntos_globales.get(item.0)}}<td>
