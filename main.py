@@ -317,6 +317,9 @@ def calcularPuntos(jornada):
                     elif goles_local.goles == goles_visitante.goles and pronostico_partido.goles_local == pronostico_partido.goles_visitante:
                         puntos += 5
 
+            if puntos >= 50:
+                puntos += 10
+
             pronosticos_jugadores = PronosticoJugador.all()
             pronosticos_jugadores.filter("pronostico_jornada =", pronostico_jornada)
             for pronostico_jugador in pronosticos_jugadores:
