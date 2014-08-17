@@ -1237,77 +1237,92 @@ class ResultadosJornada(webapp2.RequestHandler):
             if usuario != None:
                 jornada = Jornada.get(self.request.get('key'))
 
-                partidos = Partido.all()
-                partidos.filter("jornada =", jornada)
+                disabled = False
 
-                goles_jugadores = GolesJornadaJugador.all()
-                goles_jugadores.filter("jornada =", jornada)
-                goles = {}
-                for goles_jugador in goles_jugadores:
-                    goles[goles_jugador.jugador.key()] = goles_jugador.goles
+                if jornada.fecha_inicio == None:
+                    disabled = True
+                    fecha_limite = None
+                else:
+                    fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                    if TIME_ZONE.localize(fecha_limite) > datetime.datetime.now(TIME_ZONE):
+                        disabled = True
 
-                resultados = {}
-                for partido in partidos:
-                    goles_partidos = GolesPartidoEquipo.all()
-                    goles_partidos.filter("partido =", partido)
-                    goles_partidos.filter("equipo =", partido.local)
-                    goles_local = goles_partidos.get()
+                if disabled:
+                    content = {'fecha_limite': fecha_limite, 'disabled': disabled, 'usuario': usuario}
+                    template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
+                    self.response.write(template.render(content))
+                    return
+                else:
+                    partidos = Partido.all()
+                    partidos.filter("jornada =", jornada)
 
-                    goles_partidos = GolesPartidoEquipo.all()
-                    goles_partidos.filter("partido =", partido)
-                    goles_partidos.filter("equipo =", partido.visitante)
-                    goles_visitante = goles_partidos.get()
+                    goles_jugadores = GolesJornadaJugador.all()
+                    goles_jugadores.filter("jornada =", jornada)
+                    goles = {}
+                    for goles_jugador in goles_jugadores:
+                        goles[goles_jugador.jugador.key()] = goles_jugador.goles
 
-                    if goles_local != None and goles_visitante != None:
-                        resultados[partido.key()] = {}
-                        resultados[partido.key()]['local'] = goles_local.goles
-                        resultados[partido.key()]['visitante'] = goles_visitante.goles
+                    resultados = {}
+                    for partido in partidos:
+                        goles_partidos = GolesPartidoEquipo.all()
+                        goles_partidos.filter("partido =", partido)
+                        goles_partidos.filter("equipo =", partido.local)
+                        goles_local = goles_partidos.get()
 
-                puntos_jornadas = {}
+                        goles_partidos = GolesPartidoEquipo.all()
+                        goles_partidos.filter("partido =", partido)
+                        goles_partidos.filter("equipo =", partido.visitante)
+                        goles_visitante = goles_partidos.get()
 
-                usuario_dict = {}
-                usuarios = Usuario.all()
-                usuarios.filter("activo =", True)
-                usuarios.order("nick")
+                        if goles_local != None and goles_visitante != None:
+                            resultados[partido.key()] = {}
+                            resultados[partido.key()]['local'] = goles_local.goles
+                            resultados[partido.key()]['visitante'] = goles_visitante.goles
 
-                for item in usuarios:
-                    pronostico_jornada = PronosticoJornada.all()
-                    pronostico_jornada.filter("usuario =", item)
-                    pronostico_jornada.filter("jornada =", jornada)
-                    pronostico_jornada = pronostico_jornada.get()
+                    puntos_jornadas = {}
 
-                    pronosticos = PronosticoPartido.all()
-                    pronosticos.filter("pronostico_jornada =", pronostico_jornada)
+                    usuario_dict = {}
+                    usuarios = Usuario.all()
+                    usuarios.filter("activo =", True)
+                    usuarios.order("nick")
 
-                    pronosticos_dict = {}
-                    for pronostico in pronosticos:
-                        pronosticos_dict[pronostico.partido.key()] = {}
-                        pronosticos_dict[pronostico.partido.key()]['local'] = pronostico.goles_local
-                        pronosticos_dict[pronostico.partido.key()]['visitante'] = pronostico.goles_visitante
+                    for item in usuarios:
+                        pronostico_jornada = PronosticoJornada.all()
+                        pronostico_jornada.filter("usuario =", item)
+                        pronostico_jornada.filter("jornada =", jornada)
+                        pronostico_jornada = pronostico_jornada.get()
 
-                    pronostico_jugadores = PronosticoJugador.all()
-                    pronostico_jugadores.filter("pronostico_jornada =", pronostico_jornada)
-                    pronosticos_dict['jugadores'] = []
-                    for pronostico_jugador in pronostico_jugadores:
-                        pronosticos_dict['jugadores'].append(pronostico_jugador.jugador)
+                        pronosticos = PronosticoPartido.all()
+                        pronosticos.filter("pronostico_jornada =", pronostico_jornada)
 
-                    usuario_dict[item.nick] = pronosticos_dict
+                        pronosticos_dict = {}
+                        for pronostico in pronosticos:
+                            pronosticos_dict[pronostico.partido.key()] = {}
+                            pronosticos_dict[pronostico.partido.key()]['local'] = pronostico.goles_local
+                            pronosticos_dict[pronostico.partido.key()]['visitante'] = pronostico.goles_visitante
 
-                    puntos_jornada = PuntosJornada.all()
-                    puntos_jornada.filter("jornada =", jornada)
-                    puntos_jornada.filter("usuario =", item)
-                    puntos_jornada = puntos_jornada.get()
-                    if puntos_jornada != None:
-                        puntos_jornadas[item.nick] = puntos_jornada.puntos
-                    else:
-                        puntos_jornadas[item.nick] = 0
+                        pronostico_jugadores = PronosticoJugador.all()
+                        pronostico_jugadores.filter("pronostico_jornada =", pronostico_jornada)
+                        pronosticos_dict['jugadores'] = []
+                        for pronostico_jugador in pronostico_jugadores:
+                            pronosticos_dict['jugadores'].append(pronostico_jugador.jugador)
 
-                print usuario_dict
-                content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'puntos_jornadas': puntos_jornadas, 'usuario': usuario}
+                        usuario_dict[item.nick] = pronosticos_dict
 
-                template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
-                self.response.write(template.render(content))
-                return
+                        puntos_jornada = PuntosJornada.all()
+                        puntos_jornada.filter("jornada =", jornada)
+                        puntos_jornada.filter("usuario =", item)
+                        puntos_jornada = puntos_jornada.get()
+                        if puntos_jornada != None:
+                            puntos_jornadas[item.nick] = puntos_jornada.puntos
+                        else:
+                            puntos_jornadas[item.nick] = 0
+
+                    content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'puntos_jornadas': puntos_jornadas, 'disabled': disabled, 'usuario': usuario}
+
+                    template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
+                    self.response.write(template.render(content))
+                    return
         self.redirect('/')
 
 # IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
