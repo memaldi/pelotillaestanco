@@ -307,15 +307,15 @@ def calcularPuntos(jornada):
                 goles_visitante.filter("partido =", pronostico_partido.partido)
                 goles_visitante.filter("equipo =", pronostico_partido.partido.visitante)
                 goles_visitante = goles_visitante.get()
-
-                if goles_local.goles == pronostico_partido.goles_local and goles_visitante.goles == pronostico_partido.goles_visitante:
-                    puntos += 8
-                elif goles_local.goles > goles_visitante.goles and pronostico_partido.goles_local > pronostico_partido.goles_visitante:
-                    puntos += 5
-                elif goles_local.goles < goles_visitante.goles and pronostico_partido.goles_local < pronostico_partido.goles_visitante:
-                    puntos += 5
-                elif goles_local.goles == goles_visitante.goles and pronostico_partido.goles_local == pronostico_partido.goles_visitante:
-                    puntos += 5
+                if goles_local.goles != None and goles_visitante != None:
+                    if goles_local.goles == pronostico_partido.goles_local and goles_visitante.goles == pronostico_partido.goles_visitante:
+                        puntos += 8
+                    elif goles_local.goles > goles_visitante.goles and pronostico_partido.goles_local > pronostico_partido.goles_visitante:
+                        puntos += 5
+                    elif goles_local.goles < goles_visitante.goles and pronostico_partido.goles_local < pronostico_partido.goles_visitante:
+                        puntos += 5
+                    elif goles_local.goles == goles_visitante.goles and pronostico_partido.goles_local == pronostico_partido.goles_visitante:
+                        puntos += 5
 
             pronosticos_jugadores = PronosticoJugador.all()
             pronosticos_jugadores.filter("pronostico_jornada =", pronostico_jornada)
@@ -342,7 +342,7 @@ def calcularPuntos(jornada):
                 puntos_jornada.usuario = usuario
                 puntos_jornada.jornada = jornada
                 puntos_jornada.put()
-
+            print puntos_jornada
             puntos_jornada.puntos = puntos
             db.put(puntos_jornada)
 
