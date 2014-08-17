@@ -538,7 +538,34 @@ class Goleadores(webapp2.RequestHandler):
                 if usuario.admin:
                     jornada_key = self.request.get('key')
                     jornada = Jornada.get(jornada_key)
-                    content = {'goleadores': jornada.golesjornadajugador_set, 'jornada_key': jornada_key, 'usuario': usuario}
+                    partidos_dict = {}
+                    resultados_dict = {}
+                    for goleador in jornada.golesjornadajugador_set:
+                        partidos = Partido.all()
+                        partidos.filter("jornada =", jornada)
+                        partidos.filter("local =", goleador.jugador.equipo)
+                        partido = partidos.get()
+
+                        if partido == None:
+                            partidos = Partido.all()
+                            partidos.filter("jornada =", jornada)
+                            partidos.filter("visitante =", goleador.jugador.equipo)
+                            partido = partidos.get()
+
+                        goles_local = GolesPartidoEquipo().all()
+                        goles_local.filter("partido =", partido)
+                        goles_local.filter("equipo =", partido.local)
+                        goles_local = goles_local.get()
+
+                        goles_visitante = GolesPartidoEquipo().all()
+                        goles_visitante.filter("partido =", partido)
+                        goles_visitante.filter("equipo =", partido.visitante)
+                        goles_visitante = goles_visitante.get()
+
+                        partidos_dict[goleador.key()] = partido
+                        resultados_dict[partido.key()] = (goles_local.goles, goles_visitante.goles)
+
+                    content = {'goleadores': jornada.golesjornadajugador_set, 'jornada_key': jornada_key, 'partidos': partidos_dict, 'resultados': resultados_dict, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-goleadores.html')
                     self.response.write(template.render(content))
                     return

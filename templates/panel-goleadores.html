@@ -14,6 +14,7 @@
 	  			<th>Nombre</th>
           <th>Demarcación</th>
           <th>Goles</th>
+          <th>Partido</th>
 	  			<th></th>
           <th></th>
 	  		</tr>
@@ -25,6 +26,9 @@
           <td>{{goleador.jugador.nombre}}</td>
           <td>{{goleador.jugador.demarcacion}}</td>
           <td>{{goleador.goles}}</td>
+          {% set partido = partidos.get(goleador.key()) %}
+          {% set resultado = resultados.get(partido.key()) %}
+          <td>{{partido.local.nombre}} {% if resultado.0 != None %}{{resultado.0}}{% endif %} - {% if resultado.1 != None %}{{resultado.1}}{% endif %} {{partido.visitante.nombre}}</td>
           <td><a class="btn btn-default" href="/admin/jornadas/goleadores/nuevo?key={{goleador.key()}}&amp;jornada={{jornada_key}}" role="button"><span class="glyphicon glyphicon-pencil"></span></a></td>
           <td><a class="btn btn-default" href="/admin/jornadas/goleadores/borrar?key={{goleador.key()}}&amp;jornada={{jornada_key}}" role="button"><span class="glyphicon glyphicon-trash"></span></a></td>
         </tr>
