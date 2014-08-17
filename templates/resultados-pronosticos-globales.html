@@ -18,8 +18,10 @@
         <div class="col-sm-5">
           <select class="form-control" name="campeon-invierno">
             <option value=""></option>
-            {% for equipo in equipos_liga %}
-              <option value="{{equipo.key()}}" {% if pronostico_global.campeon_invierno %} {% if equipo.key() == pronostico_global.campeon_invierno.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+            {% for equipo in equipos %}
+              {% if equipo.lfp == True %}
+                <option value="{{equipo.key()}}" {% if pronostico_global.campeon_invierno %} {% if equipo.key() == pronostico_global.campeon_invierno.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% endif %}
             {% endfor %}
           </select>
         </div>
@@ -30,8 +32,10 @@
         <div class="col-sm-5">
           <select class="form-control" name="campeon-liga">
             <option value=""></option>
-            {% for equipo in equipos_liga %}
-              <option value="{{equipo.key()}}" {% if pronostico_global.campeon_liga %} {% if equipo.key() == pronostico_global.campeon_liga.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+            {% for equipo in equipos %}
+              {% if equipo.lfp == True%}
+                <option value="{{equipo.key()}}" {% if pronostico_global.campeon_liga %} {% if equipo.key() == pronostico_global.campeon_liga.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% endif %}
             {% endfor %}
           </select>
         </div>
@@ -42,8 +46,10 @@
         <div class="col-sm-5">
           <select class="form-control" name="campeon-copa">
             <option value=""></option>
-            {% for equipo in equipos_liga %}
-              <option value="{{equipo.key()}}" {% if pronostico_global.campeon_copa %} {% if equipo.key() == pronostico_global.campeon_copa.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+            {% for equipo in equipos %}
+              {% if equipo.lfp == True %}
+                <option value="{{equipo.key()}}" {% if pronostico_global.campeon_copa %} {% if equipo.key() == pronostico_global.campeon_copa.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% endif %}
             {% endfor %}
           </select>
         </div>
@@ -54,8 +60,10 @@
         <div class="col-sm-5">
           <select class="form-control" name="champions">
             <option value=""></option>
-            {% for equipo in equipos_liga %}
-              <option value="{{equipo.key()}}" {% if pronostico_global.puesto_champions %} {% if equipo.key() == pronostico_global.puesto_champions.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+            {% for equipo in equipos %}
+              {% if equipo.lfp == True %}
+                <option value="{{equipo.key()}}" {% if pronostico_global.puesto_champions %} {% if equipo.key() == pronostico_global.puesto_champions.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% endif %}
             {% endfor %}
           </select>
         </div>
@@ -67,11 +75,13 @@
           <div class="col-sm-5">
             <select class="form-control" name="uefa-{{n+1}}">
               <option value=""></option>
-              {% for equipo in equipos_liga %}
-                {% if n == 0 %}
-                  <option value="{{equipo.key()}}" {% if pronostico_global.puestos_uefa.0 %} {% if equipo.key() == pronostico_global.puestos_uefa.0 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
-                {% elif n == 1 %}
-                  <option value="{{equipo.key()}}" {% if pronostico_global.puestos_uefa.1 %} {% if equipo.key() == pronostico_global.puestos_uefa.1 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% for equipo in equipos %}
+                {% if equipo.lfp == True %}
+                  {% if n == 0 %}
+                    <option value="{{equipo.key()}}" {% if pronostico_global.puestos_uefa.0 %} {% if equipo.key() == pronostico_global.puestos_uefa.0 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+                  {% elif n == 1 %}
+                    <option value="{{equipo.key()}}" {% if pronostico_global.puestos_uefa.1 %} {% if equipo.key() == pronostico_global.puestos_uefa.1 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+                  {% endif %}
                 {% endif %}
               {% endfor %}
             </select>
@@ -85,13 +95,15 @@
           <div class="col-sm-5">
             <select class="form-control" name="descenso-{{n+1}}">
               <option value=""></option>
-              {% for equipo in equipos_liga %}
-                {% if n == 0 %}
-                  <option value="{{equipo.key()}}" {% if pronostico_global.puestos_descenso.0 %} {% if equipo.key() == pronostico_global.puestos_descenso.0 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
-                {% elif n == 1 %}
-                  <option value="{{equipo.key()}}" {% if pronostico_global.puestos_descenso.1 %} {% if equipo.key() == pronostico_global.puestos_descenso.1 %} selected {% endif %} {% endif %} >{{equipo.nombre}}</option>
-                {% elif n == 2 %}
-                  <option value="{{equipo.key()}}" {% if pronostico_global.puestos_descenso.2 %} {% if equipo.key() == pronostico_global.puestos_descenso.2 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% for equipo in equipos %}
+                {% if equipo.lfp == True %}
+                  {% if n == 0 %}
+                    <option value="{{equipo.key()}}" {% if pronostico_global.puestos_descenso.0 %} {% if equipo.key() == pronostico_global.puestos_descenso.0 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+                  {% elif n == 1 %}
+                    <option value="{{equipo.key()}}" {% if pronostico_global.puestos_descenso.1 %} {% if equipo.key() == pronostico_global.puestos_descenso.1 %} selected {% endif %} {% endif %} >{{equipo.nombre}}</option>
+                  {% elif n == 2 %}
+                    <option value="{{equipo.key()}}" {% if pronostico_global.puestos_descenso.2 %} {% if equipo.key() == pronostico_global.puestos_descenso.2 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+                  {% endif %}
                 {% endif %}
               {% endfor %}
             </select>
@@ -104,8 +116,10 @@
         <div class="col-sm-5">
           <select class="form-control" name="campeon-champions">
             <option value=""></option>
-            {% for equipo in equipos_champions %}
-              <option value="{{equipo.key()}}" {% if pronostico_global.campeon_champions %} {% if equipo.key() == pronostico_global.campeon_champions.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+            {% for equipo in equipos %}
+              {% if equipo.champions == True %}
+                <option value="{{equipo.key()}}" {% if pronostico_global.campeon_champions %} {% if equipo.key() == pronostico_global.campeon_champions.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% endif %}
             {% endfor %}
           </select>
         </div>
@@ -116,8 +130,10 @@
         <div class="col-sm-5">
           <select class="form-control" name="campeon-uefa">
             <option value=""></option>
-            {% for equipo in equipos_uefa %}
-              <option value="{{equipo.key()}}"  {% if pronostico_global.campeon_uefa %} {% if equipo.key() == pronostico_global.campeon_uefa.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+            {% for equipo in equipos %}
+              {% if equipo.uefa %}
+                <option value="{{equipo.key()}}"  {% if pronostico_global.campeon_uefa %} {% if equipo.key() == pronostico_global.campeon_uefa.key() %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
+              {% endif %}
             {% endfor %}
           </select>
         </div>

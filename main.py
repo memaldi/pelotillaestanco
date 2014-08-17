@@ -774,7 +774,14 @@ class ResultadosPronosticosGlobales(webapp2.RequestHandler):
                     else:
                         fecha_str = None
 
-                    equipos_liga = Equipo.all()
+                    equipos = Equipo.all()
+                    equipos.order("nombre")
+
+                    equipos_list = []
+                    for equipo in equipos:
+                        equipos_list.append(equipo)
+
+                    '''equipos_liga = Equipo.all()
                     equipos_liga.filter("lfp =", True)
                     equipos_liga.order("nombre")
 
@@ -784,13 +791,13 @@ class ResultadosPronosticosGlobales(webapp2.RequestHandler):
 
                     equipos_uefa = Equipo.all()
                     equipos_uefa.filter("uefa =", True)
-                    equipos_uefa.order("nombre")
+                    equipos_uefa.order("nombre")'''
 
                     porteros = Jugador.all()
                     porteros.filter("demarcacion =", 'Portero')
                     porteros.order("nombre")
 
-                    content = {'pronostico_global': pronostico_global, 'fecha_str': fecha_str, 'equipos_liga': equipos_liga, 'equipos_champions': equipos_champions, 'equipos_uefa': equipos_uefa, 'porteros': porteros, 'usuario': usuario}
+                    content = {'pronostico_global': pronostico_global, 'fecha_str': fecha_str, 'equipos': equipos_list, 'porteros': porteros, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/resultados-pronosticos-globales.html')
                     self.response.write(template.render(content))
                     return
