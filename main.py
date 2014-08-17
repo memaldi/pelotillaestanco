@@ -1536,8 +1536,40 @@ class CargarJugadores(webapp2.RequestHandler):
                 print e
                 break
 
+class CargarChampions(webapp2.RequestHandler):
+    def get(self):
+        parser = HTMLParser()
+        with open('datos/champions/champions.html') as f:
+            for line in f:
+                m = re.finditer('width="65%">(\w| |-|\.)+', line, re.UNICODE | re.IGNORECASE)
+                for item in m:
+                    nombre = item.group(0).replace('width="65%">', '')
+                    nombre = nombre[:len(nombre) - 1].decode('utf-8')
+                    if nombre not in ['Athletic Club', 'Real Madrid CF', 'FC Barcelona', 'Club Atletico de Madrid', 'Ganador play-of']:
+                        #print nombre
+                        equipo = Equipo.all()
+                        equipo.filter("nombre =", nombre)
+                        equipo = equipo.get()
+                        if equipo == None:
+                            equipo = Equipo(nombre=nombre, lfp=False, champions=True, uefa=True)
+                            equipo.put()
+
+                m = re.finditer('<td>([A-Za-z]|\.| |-)+', line, re.UNICODE | re.IGNORECASE)
+                for item in m:
+                    nombre = item.group(0).replace('<td>', '')
+                    nombre = nombre[:len(nombre) - 1]
+                    if nombre not in ['Ganador play-of']:
+                        print nombre
+                        equipo = Equipo.all()
+                        equipo.filter("nombre =", nombre)
+                        equipo = equipo.get()
+                        if equipo == None:
+                            equipo = Equipo(nombre=nombre, lfp=False, champions=True, uefa=True)
+                            equipo.put()
+
 
 app = webapp2.WSGIApplication([
+    ('/cargarchampions', CargarChampions),
     ('/cargarjugadores', CargarJugadores),
     ('/cargarjornadas', CargarJornadas),
     ('/resultados/jornada', ResultadosJornada),
