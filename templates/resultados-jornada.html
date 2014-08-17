@@ -44,11 +44,11 @@
             {% for partido in partidos %}
                 <tr>
                     <td>{{partido.local.nombre}}</td>
-                    <td>({% if resultados.get(partido.key()) %} {{resultados.get(partido.key()).get('local')}} {% endif %})</td>
+                    <td>({% if resultados.get(partido.key()) %} {% if resultados.get(partido.key()).get('local') != None %} {{resultados.get(partido.key()).get('local')}} {% endif %} {% endif %})</td>
                     <td>{% if item.1.get(partido.key()) %} {{item.1.get(partido.key()).get('local')}} {% endif %}</td>
                     <td>-</td>
                     <td>{% if item.1.get(partido.key()) %} {{item.1.get(partido.key()).get('visitante')}} {% endif %}</td>
-                    <td>({% if resultados.get(partido.key()) %} {{resultados.get(partido.key()).get('visitante')}} {% endif %})</td>
+                    <td>({% if resultados.get(partido.key()) %} {% if resultados.get(partido.key()).get('visitante') != None %} {{resultados.get(partido.key()).get('visitante')}} {% endif %} {% endif %})</td>
                     <td>{{partido.visitante.nombre}}</td>
                 </tr>
             {% endfor %}
