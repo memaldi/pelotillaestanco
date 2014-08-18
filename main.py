@@ -1032,6 +1032,12 @@ class PronosticoGoleadores(webapp2.RequestHandler):
                 if usuario.activo:
                     jornada = Jornada.get(self.request.get('key'))
 
+                    disabled = False
+                    if jornada.fecha_inicio != None:
+                        fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                        if TIME_ZONE.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE):
+                            disabled = True
+
                     pronostico_jornada = PronosticoJornada.all()
                     pronostico_jornada.filter("jornada =", jornada)
                     pronostico_jornada.filter("usuario =", usuario)
@@ -1056,7 +1062,7 @@ class PronosticoGoleadores(webapp2.RequestHandler):
                             centrocampistas.append(jugador)
                         elif jugador.demarcacion == 'Delantero':
                             delanteros.append(jugador)
-                    content = {'defensas': defensas, 'centrocampistas': centrocampistas, 'delanteros': delanteros, 'jornada': jornada, 'pronosticos_jugadores': pronosticos_jugadores, 'usuario': usuario}
+                    content = {'defensas': defensas, 'centrocampistas': centrocampistas, 'delanteros': delanteros, 'jornada': jornada, 'pronosticos_jugadores': pronosticos_jugadores, 'disabled': disabled, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/pronostico-goleadores.html')
                     self.response.write(template.render(content))
                     return

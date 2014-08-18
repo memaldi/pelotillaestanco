@@ -5,13 +5,14 @@
 {% endblock %}}
 
 {% block admin_content %}
+	{{disabled}}
 	<div class="well">
 		<form class="form-horizontal" role="form" action="/pronosticos/goleadores" method="post">
-			
+
 			<div class="form-group" id="defensa-group">
 				<label for="defensa" class="col-sm-2 control-label">Defensa</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="defensa">
+					<select class="form-control" name="defensa" {% if disabled %} disabled {% endif %}>
 					  <option value="">Sin asignar</option>
 					  {% for defensa in defensas %}
 					  	<option value="{{defensa.key()}}" {% for pronostico in pronosticos_jugadores %} {% if pronostico.jugador.key() == defensa.key() %} selected {% endif %} {% endfor %}>{{defensa.nombre}} ({{defensa.equipo.nombre}})</option>
@@ -23,7 +24,7 @@
 			<div class="form-group" id="centrocampista-group">
 				<label for="centrocampista" class="col-sm-2 control-label">Centrocampista</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="centrocampista">
+					<select class="form-control" name="centrocampista" {% if disabled %} disabled {% endif %}>
 					  <option value="">Sin asignar</option>
 					  {% for centrocampista in centrocampistas %}
 					  	<option value="{{centrocampista.key()}}" {% for pronostico in pronosticos_jugadores %} {% if pronostico.jugador.key() == centrocampista.key() %} selected {% endif %} {% endfor %}>{{centrocampista.nombre}} ({{centrocampista.equipo.nombre}})</option>
@@ -35,7 +36,7 @@
 			<div class="form-group" id="delantero-group">
 				<label for="delantero" class="col-sm-2 control-label">Delantero</label>
 				<div class="col-sm-5">
-					<select class="form-control" name="delantero">
+					<select class="form-control" name="delantero" {% if disabled %} disabled {% endif %}>
 					  <option value="">Sin asignar</option>
 					  {% for delantero in delanteros %}
 					  	<option value="{{delantero.key()}}" {% for pronostico in pronosticos_jugadores %} {% if pronostico.jugador.key() == delantero.key() %} selected {% endif %} {% endfor %}>{{delantero.nombre}} ({{delantero.equipo.nombre}})</option>
@@ -53,5 +54,5 @@
 	</div>
 {% endblock %}
 {% block scripts %}
-	
+
 {% endblock%}
