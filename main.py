@@ -1418,13 +1418,64 @@ class ResultadosJornada(webapp2.RequestHandler):
                         else:
                             puntos_jornadas[item.nick] = 0
 
-                    content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'puntos_jornadas': puntos_jornadas, 'disabled': disabled, 'usuario': usuario}
+                    content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'puntos_jornadas': puntos_jornadas, 'disabled': disabled, 'jornada': jornada, 'usuario': usuario}
 
                     template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
                     self.response.write(template.render(content))
                     return
         self.redirect('/')
 
+class TablaResumen(webapp2.RequestHandler):
+    def get(self):
+        user = users.get_current_user()
+        if user:
+            usuario = Usuario.gql("WHERE user_id = '%s'" % user.user_id()).get()
+            if usuario != None:
+                jornada = Jornada.get(self.request.get('key'))
+
+                disabled = False
+
+                if jornada.fecha_inicio == None:
+                    disabled = True
+                    fecha_limite = None
+                else:
+                    fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                    if TIME_ZONE.localize(fecha_limite) > datetime.datetime.now(TIME_ZONE):
+                        disabled = True
+
+                if disabled:
+                    content = {'fecha_limite': fecha_limite, 'disabled': disabled, 'usuario': usuario}
+                    template = JINJA_ENVIRONMENT.get_template('templates/tabla-resumen.html')
+                    self.response.write(template.render(content))
+                    return
+                else:
+                    usuarios_dict = {}
+                    partidos_dict = {}
+                    usuarios = Usuario.all()
+                    usuarios.filter("activo =", True)
+
+                    for item in usuarios:
+                        pronostico_jornada = PronosticoJornada.all()
+                        pronostico_jornada.filter("jornada =", jornada)
+                        pronostico_jornada.filter("usuario =", item)
+                        pronostico_jornada = pronostico_jornada.get()
+
+                        for partido in jornada.partido_set:
+                            partidos_dict[partido.key()] = partido
+
+                        usuarios_dict[item.nick] = {}
+
+                        if pronostico_jornada != None:
+                            for pronostico_partido in pronostico_jornada.pronosticopartido_set:
+                                if pronostico_partido != None:
+                                    usuarios_dict[item.nick][pronostico_partido
+                                .partido.key()] = (pronostico_partido.goles_local, pronostico_partido.goles_visitante)
+
+                    content = {'disabled': disabled, 'usuarios': usuarios_dict, 'partidos': partidos_dict, 'usuario': usuario}
+                    template = JINJA_ENVIRONMENT.get_template('templates/tabla-resumen.html')
+                    self.response.write(template.render(content))
+                    return
+        self.redirect('/')
 # IMPORTANTE: COMENTAR ESTE METODO Y SU HANDLER
 class CargarJornadas(webapp2.RequestHandler):
     def get(self):
@@ -1597,6 +1648,7 @@ app = webapp2.WSGIApplication([
     ('/cargarchampions', CargarChampions),
     ('/cargarjugadores', CargarJugadores),
     ('/cargarjornadas', CargarJornadas),
+    ('/resultados/tabla-resumen', TablaResumen),
     ('/resultados/jornada', ResultadosJornada),
     ('/resultados', Resultados),
     ('/clasificacion', Clasificacion),

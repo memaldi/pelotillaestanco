@@ -14,6 +14,8 @@
     Los resultados no estarán disponibles hasta pasada la fecha límite para completar el pronóstico {% if fecha_limite != None %} ({{fecha_limite}}) {% endif %}.
 {% else %}
 
+    <h4><a href="/resultados/tabla-resumen?key={{jornada.key()}}">Tabla resumen</a></h4>
+
     {% set count = 0 %}
 
     <table class="table table-striped" id="table">

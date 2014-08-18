@@ -1,0 +1,41 @@
+{% extends "templates/panel-admin.html" %}
+
+{% block page_title %}
+    {% if equipo_nombre %}
+        Editar {{ equipo_nombre }}
+    {% else %}
+        Tabla resumen
+    {% endif %}
+{% endblock %}}
+
+{% block admin_content %}
+
+{% if disabled%}
+    Los resultados no estarán disponibles hasta pasada la fecha límite para completar el pronóstico {% if fecha_limite != None %} ({{fecha_limite}}) {% endif %}.
+{% else %}
+
+    <table class="table table-striped" id="table">
+        <thead>
+            <tr>
+              <th></th>
+              {% for partido in partidos %}
+                <th>{{partidos.get(partido).local.nombre}} - {{partidos.get(partido).visitante.nombre}}</th>
+              {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for usuario in usuarios %}
+                <tr>
+                    <td>{{usuario}}</td>
+                    {% for partido in partidos %}
+                        <td>{{usuarios.get(usuario).get(partido).0}} - {{usuarios.get(usuario).get(partido).1}}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+{% endif %}
+
+{% endblock %}
