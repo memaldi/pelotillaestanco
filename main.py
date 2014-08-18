@@ -1538,7 +1538,6 @@ class CargarJugadores(webapp2.RequestHandler):
 
 class CargarChampions(webapp2.RequestHandler):
     def get(self):
-        parser = HTMLParser()
         with open('datos/champions/champions.html') as f:
             for line in f:
                 m = re.finditer('width="65%">(\w| |-|\.)+', line, re.UNICODE | re.IGNORECASE)
@@ -1551,7 +1550,7 @@ class CargarChampions(webapp2.RequestHandler):
                         equipo.filter("nombre =", nombre)
                         equipo = equipo.get()
                         if equipo == None:
-                            equipo = Equipo(nombre=nombre, lfp=False, champions=True, uefa=True)
+                            equipo = Equipo(nombre=nombre, lfp=False, champions=True, uefa=False)
                             equipo.put()
 
                 m = re.finditer('<td>([A-Za-z]|\.| |-)+', line, re.UNICODE | re.IGNORECASE)
@@ -1564,11 +1563,31 @@ class CargarChampions(webapp2.RequestHandler):
                         equipo.filter("nombre =", nombre)
                         equipo = equipo.get()
                         if equipo == None:
-                            equipo = Equipo(nombre=nombre, lfp=False, champions=True, uefa=True)
+                            equipo = Equipo(nombre=nombre, lfp=False, champions=True, uefa=False)
                             equipo.put()
 
+class CargarUefa(webapp2.RequestHandler):
+    def get(self):
+        with open('datos/uefa/uefa.html') as f:
+            for line in f:
+                m = re.finditer('<td class="l">(<|\w| |=|"|/|\.|>)+</a>', line, re.UNICODE | re.IGNORECASE)
+                for item in m:
+                    partial = item.group(0)
+                    m2 = re.search('title="(\w| |-|\\|)*"', partial, re.UNICODE | re.IGNORECASE)
+                    if m2 != None:
+                        nombre = m2.group(0)
+                        nombre = nombre.replace('title=', '').replace('"', '')
+                        if nombre not in ['Real Sociedad de Fútbol', 'Sevilla FC', 'Villarreal CF']:
+                            equipo = Equipo.all()
+                            equipo.filter("nombre =", nombre.decode('utf-8'))
+                            equipo = equipo.get()
+                            print nombre
+                            if equipo == None:
+                                equipo = Equipo(nombre=nombre.decode('utf-8'), lfp=False, champions=False, uefa=True)
+                                equipo.put()
 
 app = webapp2.WSGIApplication([
+    ('/cargaruefa', CargarUefa),
     ('/cargarchampions', CargarChampions),
     ('/cargarjugadores', CargarJugadores),
     ('/cargarjornadas', CargarJornadas),
