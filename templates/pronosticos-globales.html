@@ -99,7 +99,7 @@
 					<div class="col-sm-5">
 						<select class="form-control" name="descenso-{{n+1}}" {% if disabled %} disabled {% endif %}>
 						  <option value=""></option>
-						  {% for equipo in equipos_liga %}
+						  {% for equipo in equipos %}
 						  	{% if equipo.lfp == True %}
 							  	{% if n == 0 %}
 							  		<option value="{{equipo.key()}}" {% if pronostico_global.puestos_descenso.0 %} {% if equipo.key() == pronostico_global.puestos_descenso.0 %} selected {% endif %} {% endif %}>{{equipo.nombre}}</option>
