@@ -307,7 +307,7 @@ def calcularPuntos(jornada):
                 goles_visitante.filter("partido =", pronostico_partido.partido)
                 goles_visitante.filter("equipo =", pronostico_partido.partido.visitante)
                 goles_visitante = goles_visitante.get()
-                if goles_local.goles != None and goles_visitante != None:
+                if goles_local.goles != None and goles_visitante != None and pronostico_partido.goles_local != None and pronostico_partido.goles_visitante != None:
                     if goles_local.goles == pronostico_partido.goles_local and goles_visitante.goles == pronostico_partido.goles_visitante:
                         puntos += 8
                     elif goles_local.goles > goles_visitante.goles and pronostico_partido.goles_local > pronostico_partido.goles_visitante:
@@ -345,7 +345,6 @@ def calcularPuntos(jornada):
                 puntos_jornada.usuario = usuario
                 puntos_jornada.jornada = jornada
                 puntos_jornada.put()
-            print puntos_jornada
             puntos_jornada.puntos = puntos
             db.put(puntos_jornada)
 
@@ -1002,21 +1001,29 @@ class FichaPronostico(webapp2.RequestHandler):
                         goles_local = self.request.get('goles-local-%s' % partido_key)
                         goles_visitante = self.request.get('goles-visitante-%s' % partido_key)
 
-                        if goles_local != '' and goles_visitante != '':
+                        if goles_local != '':
+                            goles_local = int(goles_local)
+                        else:
+                            goles_local = None
 
-                            partido = Partido.get(partido_key)
-                            pronostico_partido = PronosticoPartido.all()
-                            pronostico_partido.filter("pronostico_jornada =", pronostico_jornada)
-                            pronostico_partido.filter("partido =", partido)
-                            pronostico_partido = pronostico_partido.get()
+                        if goles_visitante != '':
+                            goles_visitante = int(goles_visitante)
+                        else:
+                            goles_visitante = None
 
-                            if pronostico_partido == None:
-                                pronostico_partido = PronosticoPartido(pronostico_jornada=pronostico_jornada, partido=partido, goles_local=int(goles_local), goles_visitante=int(goles_visitante))
-                                pronostico_partido.put()
-                            else:
-                                pronostico_partido.goles_local = int(goles_local)
-                                pronostico_partido.goles_visitante = int(goles_visitante)
-                                db.put(pronostico_partido)
+                        partido = Partido.get(partido_key)
+                        pronostico_partido = PronosticoPartido.all()
+                        pronostico_partido.filter("pronostico_jornada =", pronostico_jornada)
+                        pronostico_partido.filter("partido =", partido)
+                        pronostico_partido = pronostico_partido.get()
+
+                        if pronostico_partido == None:
+                            pronostico_partido = PronosticoPartido(pronostico_jornada=pronostico_jornada, partido=partido, goles_local=goles_local, goles_visitante=goles_visitante)
+                            pronostico_partido.put()
+                        else:
+                            pronostico_partido.goles_local = goles_local
+                            pronostico_partido.goles_visitante = goles_visitante
+                            db.put(pronostico_partido)
 
                     self.redirect('/pronosticos')
                     return
@@ -1418,7 +1425,68 @@ class ResultadosJornada(webapp2.RequestHandler):
                         else:
                             puntos_jornadas[item.nick] = 0
 
-                    content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'puntos_jornadas': puntos_jornadas, 'disabled': disabled, 'jornada': jornada, 'usuario': usuario}
+                    puntos_max = 0
+
+                    for key, item in puntos_jornadas.iteritems():
+                        if item > puntos_max:
+                            puntos_max = item
+
+                    max_users = []
+
+                    if puntos_max > 0:
+                        max_users = [k for k, v in puntos_jornadas.iteritems() if v == puntos_max]
+
+                    premio_dict = {}
+
+                    if len(max_users) > 0:
+                        if len(max_users) == 1:
+                            premio_dict[max_users.pop()] = 10
+                        else:
+                            rec_partidos_dict = {}
+                            rec_exactos_dict = {}
+                            for key in max_users:
+                                rec_partidos = 0
+                                rec_exactos = 0
+                                for key2, value2 in usuario_dict[key].iteritems():
+                                    if key2 != 'jugadores':
+                                        if usuario_dict[key][key2]['local'] != None and usuario_dict[key][key2]['visitante'] != None:
+                                            if usuario_dict[key][key2]['local'] > usuario_dict[key][key2]['visitante'] and resultados[key2]['local'] > resultados[key2]['visitante']:
+                                                rec_partidos += 1
+                                            elif usuario_dict[key][key2]['local'] < usuario_dict[key][key2]['visitante'] and resultados[key2]['local'] < resultados[key2]['visitante']:
+                                                rec_partidos += 1
+                                            elif usuario_dict[key][key2]['local'] == usuario_dict[key][key2]['visitante'] and resultados[key2]['local'] == resultados[key2]['visitante']:
+                                                rec_partidos += 1
+
+                                            if usuario_dict[key][key2]['local'] == resultados[key2]['local'] and usuario_dict[key][key2]['visitante'] == resultados[key2]['visitante']:
+                                                rec_exactos += 1
+                                rec_partidos_dict[key] = rec_partidos
+                                rec_exactos_dict[key] = rec_exactos
+
+                            max_rec_partidos = 0
+
+                            for key, value in rec_partidos_dict.iteritems():
+                                if value > max_rec_partidos:
+                                    max_rec_partidos = value
+
+                            max_rec_partidos_users = [k for k, v in rec_partidos_dict.iteritems() if v == max_rec_partidos]
+
+                            if len(max_rec_partidos_users) > 0:
+                                if len(max_rec_partidos_users) == 1:
+                                    premio_dict[max_rec_partidos_users.pop()] = 10
+                                else:
+                                    max_rec_exacto = 0
+
+                                    for key, value in rec_exactos_dict.iteritems():
+                                        if value > max_rec_exacto:
+                                            max_rec_exacto = value
+
+                                    max_rec_exacto_users = [k for k, v in rec_exactos_dict.iteritems() if v == max_rec_exacto]
+
+                                    for value in max_rec_exacto_users:
+                                        premio_dict[value] = 10 / len(max_rec_exacto_users)
+
+
+                    content = {'usuarios': usuario_dict, 'partidos': partidos, 'resultados': resultados, 'goles': goles, 'puntos_jornadas': puntos_jornadas, 'disabled': disabled, 'jornada': jornada, 'premio': premio_dict, 'usuario': usuario}
 
                     template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
                     self.response.write(template.render(content))

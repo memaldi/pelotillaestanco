@@ -24,7 +24,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for usuario in usuarios %}
+            {% for usuario in usuarios|dictsort(false) %}
                 <tr>
                     <td>{{usuario}}</td>
                     {% for partido in partidos %}

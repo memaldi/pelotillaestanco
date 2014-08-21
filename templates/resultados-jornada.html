@@ -24,6 +24,7 @@
               <th>#</th>
               <th>Jugador</th>
               <th>Puntos</th>
+              <th>Premio</th>
             </tr>
         </thead>
         <tbody>
@@ -32,6 +33,7 @@
                     <td>{{loop.index}}</td>
                     <td>{{item.0}}</td>
                     <td><b>{{item.1}}</b></td>
+                    <td>{% if premio.get(item.0) != None %}<b>{{premio.get(item.0)}}</b>{% else %}0    {% endif %}</td>
                 </tr>
             {% endfor %}
         </tbody>
