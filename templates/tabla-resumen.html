@@ -26,9 +26,9 @@
         <tbody>
             {% for usuario in usuarios|dictsort(false) %}
                 <tr>
-                    <td>{{usuario}}</td>
+                    <td>{{usuario.0}}</td>
                     {% for partido in partidos %}
-                        <td>{{usuarios.get(usuario).get(partido).0}} - {{usuarios.get(usuario).get(partido).1}}</td>
+                        <td>{% if usuarios.get(usuario.0).get(partido).0  != None %}{{usuarios.get(usuario.0).get(partido).0}}{% endif %} - {% if usuarios.get(usuario.0).get(partido).1 != None %}{{usuarios.get(usuario.0).get(partido).1}}{% endif %}</td>
                     {% endfor %}
                 </tr>
             {% endfor %}

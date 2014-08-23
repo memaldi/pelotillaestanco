@@ -53,7 +53,7 @@
         <div class="form-group" id="champions-{{n+1}}-group">
           <label for="champions-{{n+1}}" class="col-sm-3 control-label">Puesto champions ({{n+1}})</label>
           <div class="col-sm-5">
-            <select class="form-control" name="champions-{{n+1}}">
+            <select class="form-control" name="champions-{{n+1}}" {% if disabled %} disabled {% endif %}>
               <option value=""></option>
               {% for equipo in equipos %}
                 {% if equipo.lfp == True %}
