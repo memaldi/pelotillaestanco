@@ -34,7 +34,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-FECHA_LIMITE = 2
+FECHA_LIMITE = 3
 
 TIME_ZONE = pytz.timezone('Europe/Madrid')
 
@@ -938,7 +938,7 @@ class Pronosticos(webapp2.RequestHandler):
                         if jornada.fecha_inicio == None:
                             fecha_limite_dict[jornada.key()] = jornada.fecha_inicio
                         else:
-                            fecha_limite_dict[jornada.key()] = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                            fecha_limite_dict[jornada.key()] = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE)
                     content = {'jornadas': jornadas, 'fecha_limite_dict': fecha_limite_dict, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/panel-pronosticos.html')
                     self.response.write(template.render(content))
@@ -962,7 +962,7 @@ class FichaPronostico(webapp2.RequestHandler):
                     disabled = False
                     fecha_limite = jornada.fecha_inicio
                     if fecha_limite != None:
-                        fecha_limite = fecha_limite - datetime.timedelta(hours=2)
+                        fecha_limite = fecha_limite - datetime.timedelta(hours=FECHA_LIMITE)
                         if TIME_ZONE.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE):
                             disabled = True
 
@@ -1041,7 +1041,7 @@ class PronosticoGoleadores(webapp2.RequestHandler):
 
                     disabled = False
                     if jornada.fecha_inicio != None:
-                        fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                        fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE)
                         if TIME_ZONE.localize(fecha_limite) < datetime.datetime.now(TIME_ZONE):
                             disabled = True
 
@@ -1350,12 +1350,12 @@ class ResultadosJornada(webapp2.RequestHandler):
                     disabled = True
                     fecha_limite = None
                 else:
-                    fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                    fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE)
                     if TIME_ZONE.localize(fecha_limite) > datetime.datetime.now(TIME_ZONE):
                         disabled = True
 
                 if disabled:
-                    content = {'fecha_limite': fecha_limite, 'disabled': disabled, 'usuario': usuario}
+                    content = {'jornada': jornada, 'fecha_limite': fecha_limite, 'disabled': disabled, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/resultados-jornada.html')
                     self.response.write(template.render(content))
                     return
@@ -1507,7 +1507,7 @@ class TablaResumen(webapp2.RequestHandler):
                     disabled = True
                     fecha_limite = None
                 else:
-                    fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=2)
+                    fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE)
                     if TIME_ZONE.localize(fecha_limite) > datetime.datetime.now(TIME_ZONE):
                         disabled = True
 
