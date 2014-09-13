@@ -1519,6 +1519,7 @@ class TablaResumen(webapp2.RequestHandler):
                 else:
                     usuarios_dict = {}
                     partidos_dict = {}
+                    goleadores_dict = {}
                     usuarios = Usuario.all()
                     usuarios.filter("activo =", True)
 
@@ -1532,14 +1533,20 @@ class TablaResumen(webapp2.RequestHandler):
                             partidos_dict[partido.key()] = partido
 
                         usuarios_dict[item.nick] = {}
-
+                        goleadores_dict[item.nick] = []
                         if pronostico_jornada != None:
                             for pronostico_partido in pronostico_jornada.pronosticopartido_set:
                                 if pronostico_partido != None:
                                     usuarios_dict[item.nick][pronostico_partido
                                 .partido.key()] = (pronostico_partido.goles_local, pronostico_partido.goles_visitante)
 
-                    content = {'disabled': disabled, 'usuarios': usuarios_dict, 'partidos': partidos_dict, 'usuario': usuario}
+                            goleadores = PronosticoJugador.all()
+                            goleadores.filter("pronostico_jornada =", pronostico_jornada)
+
+                            for goleador in goleadores:
+                                goleadores_dict[item.nick].append(goleador)
+
+                    content = {'disabled': disabled, 'usuarios': usuarios_dict, 'partidos': partidos_dict, 'goleadores': goleadores_dict, 'usuario': usuario}
                     template = JINJA_ENVIRONMENT.get_template('templates/tabla-resumen.html')
                     self.response.write(template.render(content))
                     return

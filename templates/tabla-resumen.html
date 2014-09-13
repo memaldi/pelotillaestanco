@@ -13,7 +13,6 @@
 {% if disabled%}
     Los resultados no estarán disponibles hasta pasada la fecha límite para completar el pronóstico {% if fecha_limite != None %} ({{fecha_limite}}) {% endif %}.
 {% else %}
-
     <table class="table table-striped" id="table">
         <thead>
             <tr>
@@ -21,6 +20,7 @@
               {% for partido in partidos %}
                 <th>{{partidos.get(partido).local.nombre}} - {{partidos.get(partido).visitante.nombre}}</th>
               {% endfor %}
+              <th>Goleadores</th>
             </tr>
         </thead>
         <tbody>
@@ -30,6 +30,7 @@
                     {% for partido in partidos %}
                         <td>{% if usuarios.get(usuario.0).get(partido).0  != None %}{{usuarios.get(usuario.0).get(partido).0}}{% endif %} - {% if usuarios.get(usuario.0).get(partido).1 != None %}{{usuarios.get(usuario.0).get(partido).1}}{% endif %}</td>
                     {% endfor %}
+                    <td>{% for goleador in goleadores.get(usuario.0) %} {{goleador.jugador.nombre}} {% endfor %}</td>
                 </tr>
             {% endfor %}
         </tbody>
