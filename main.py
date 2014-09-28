@@ -297,6 +297,7 @@ def calcularPuntos(jornada):
             pronosticos_partidos = PronosticoPartido.all()
             pronosticos_partidos.filter("pronostico_jornada =", pronostico_jornada)
             puntos = 0
+            pleno = 0
             for pronostico_partido in pronosticos_partidos:
                 goles_local = GolesPartidoEquipo.all()
                 goles_local.filter("partido =", pronostico_partido.partido)
@@ -308,16 +309,20 @@ def calcularPuntos(jornada):
                 goles_visitante.filter("equipo =", pronostico_partido.partido.visitante)
                 goles_visitante = goles_visitante.get()
                 if goles_local.goles != None and goles_visitante != None and pronostico_partido.goles_local != None and pronostico_partido.goles_visitante != None:
-                    if goles_local.goles == pronostico_partido.goles_local and goles_visitante.goles == pronostico_partido.goles_visitante:
-                        puntos += 8
-                    elif goles_local.goles > goles_visitante.goles and pronostico_partido.goles_local > pronostico_partido.goles_visitante:
+                    if goles_local.goles > goles_visitante.goles and pronostico_partido.goles_local > pronostico_partido.goles_visitante:
                         puntos += 5
+                        pleno += 1
                     elif goles_local.goles < goles_visitante.goles and pronostico_partido.goles_local < pronostico_partido.goles_visitante:
                         puntos += 5
+                        pleno += 1
                     elif goles_local.goles == goles_visitante.goles and pronostico_partido.goles_local == pronostico_partido.goles_visitante:
                         puntos += 5
+                        pleno += 1
 
-            if puntos >= 50:
+                    if goles_local.goles == pronostico_partido.goles_local and goles_visitante.goles == pronostico_partido.goles_visitante:
+                        puntos += 3
+
+            if pleno >= 10:
                 puntos += 10
 
             pronosticos_jugadores = PronosticoJugador.all()
