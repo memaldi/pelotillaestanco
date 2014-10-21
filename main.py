@@ -20,7 +20,7 @@ from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo
 from google.appengine.ext import db
 from HTMLParser import HTMLParser
 from pytz.gae import pytz
-from google.appengine.api import taskqueue, memcache
+from google.appengine.api import taskqueue, memcache, mail
 from google.appengine.api.taskqueue import TaskAlreadyExistsError, Task
 
 import uuid
@@ -40,6 +40,32 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 FECHA_LIMITE = 3
 
 TIME_ZONE = pytz.timezone('Europe/Madrid')
+
+def comprobar_jornada(usuario, jornada):
+    pronostico_jornada = PronosticoJornada.all()
+    pronostico_jornada.filter("jornada =", jornada)
+    pronostico_jornada.filter("usuario =", usuario)
+    pronostico_jornada = pronostico_jornada.get()
+
+    pronostico_partidos = PronosticoPartido.all()
+    pronostico_partidos.filter("pronostico_jornada =", pronostico_jornada)
+    pronostico_partidos = pronostico_partidos.count()
+
+    alerta_pronostico = False
+
+    if pronostico_partidos < 10:
+        alerta_pronostico = True
+
+    pronostico_jugador = PronosticoJugador.all()
+    pronostico_jugador.filter("pronostico_jornada =", pronostico_jornada)
+    pronostico_jugador = pronostico_jugador.count()
+
+    alerta_goleadores = False
+
+    if pronostico_jugador < 3:
+        alerta_goleadores = True
+
+    return alerta_pronostico, alerta_goleadores
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -65,28 +91,7 @@ class MainHandler(webapp2.RequestHandler):
 
             if TIME_ZONE.localize(fecha_limite) > datetime.datetime.now(TIME_ZONE):
 
-                pronostico_jornada = PronosticoJornada.all()
-                pronostico_jornada.filter("jornada =", jornada)
-                pronostico_jornada.filter("usuario =", usuario)
-                pronostico_jornada = pronostico_jornada.get()
-
-                pronostico_partidos = PronosticoPartido.all()
-                pronostico_partidos.filter("pronostico_jornada =", pronostico_jornada)
-                pronostico_partidos = pronostico_partidos.count()
-
-                alerta_pronostico = False
-
-                if pronostico_partidos < 10:
-                    alerta_pronostico = True
-
-                pronostico_jugador = PronosticoJugador.all()
-                pronostico_jugador.filter("pronostico_jornada =", pronostico_jornada)
-                pronostico_jugador = pronostico_jugador.count()
-
-                alerta_goleadores = False
-
-                if pronostico_jugador < 3:
-                    alerta_goleadores = True
+                alerta_pronostico, alerta_goleadores = comprobar_jornada(usuario, jornada)
 
                 content = {'usuario': usuario, 'prox_jornada': jornada, 'fecha_limite':  fecha_limite, 'alerta_pronostico': alerta_pronostico, 'alerta_goleadores': alerta_goleadores}
             else:
@@ -569,9 +574,35 @@ class FichaJornada(webapp2.RequestHandler):
 
 class AvisoMail(webapp2.RequestHandler):
     def post(self):
-        print '*' * 10
-        print 'Acabo de entrar en la tarea'
-        print '*' * 10
+        usuarios = Usuario.all()
+        usuarios.filter("activo =", True)
+
+        jornadas = Jornada.all()
+        jornadas.filter("fecha_inicio >", datetime.datetime.now(TIME_ZONE))
+        jornadas.order("fecha_inicio")
+        jornada = jornadas.get()
+
+        fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE)
+
+        for usuario in usuarios:
+
+            alerta_pronostico, alerta_goleadores = comprobar_jornada(usuario, jornada)
+
+            if alerta_pronostico or alerta_goleadores:
+                print usuario.email, usuario.nick, jornada.numero, fecha_limite
+                mail.send_mail(sender="Pelotilla Estanco <m.emaldi@gmail.com>",
+                      to="<%s>" % usuario.email,
+                      subject="No has rellenado la pelotilla",
+                      body='''
+                Hola %s:
+
+                Has recibido este email porque no has rellenado los pronosticos o los goleadores correspondientes a la jornada %s. Fecha límite para rellenar la jornada: %s
+
+                Un saludo,
+
+                Pelotilla Estanco
+                '''.decode('utf-8') % (usuario.nick, jornada.numero, fecha_limite)) 
+
 
 class BorrarJornada(webapp2.RequestHandler):
     def get(self):
