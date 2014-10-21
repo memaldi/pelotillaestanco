@@ -49,12 +49,18 @@ def comprobar_jornada(usuario, jornada):
 
     pronostico_partidos = PronosticoPartido.all()
     pronostico_partidos.filter("pronostico_jornada =", pronostico_jornada)
-    pronostico_partidos = pronostico_partidos.count()
+    pronostico_partidos_count = pronostico_partidos.count()
 
     alerta_pronostico = False
 
-    if pronostico_partidos < 10:
+
+    if pronostico_partidos_count < 10:
         alerta_pronostico = True
+    else:
+        for pronostico_partido in pronostico_partidos:
+            if pronostico_partido.goles_local == None or pronostico_partido.goles_visitante == None:
+                alerta_pronostico = True
+                break
 
     pronostico_jugador = PronosticoJugador.all()
     pronostico_jugador.filter("pronostico_jornada =", pronostico_jornada)
