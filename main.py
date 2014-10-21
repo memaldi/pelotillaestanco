@@ -20,7 +20,10 @@ from model import Usuario, Equipo, Jugador, Jornada, Partido, GolesPartidoEquipo
 from google.appengine.ext import db
 from HTMLParser import HTMLParser
 from pytz.gae import pytz
+from google.appengine.api import taskqueue, memcache
+from google.appengine.api.taskqueue import TaskAlreadyExistsError, Task
 
+import uuid
 import webapp2
 import jinja2
 import os
@@ -540,10 +543,35 @@ class FichaJornada(webapp2.RequestHandler):
                                 golesPartidoVisitante.put()
                     # calcular los puntos
                     calcularPuntos(jornada)
+                    # mandar task
+                    fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE + 1)
+                    print fecha_limite
+                    print datetime.datetime.now(TIME_ZONE)
+                    if jornada.fecha_inicio != None and TIME_ZONE.localize(fecha_limite) > datetime.datetime.now(TIME_ZONE):
+                        eta = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE + 1)
+                        q = taskqueue.Queue('default')
+                        uuid_key = memcache.get('mail_jornada_%s' % jornada.numero)
+                        print 'mail_jornada_%s' % jornada.numero
+                        if uuid_key == None:
+                            uuid_key = str(uuid.uuid4())
+                            q.add(Task(name=uuid_key, url='/avisomail', eta=TIME_ZONE.localize(eta)))
+                            memcache.set('mail_jornada_%s' % jornada.numero, uuid_key)
+                        else:
+                            q.delete_tasks_by_name(uuid_key)
+                            uuid_key = str(uuid.uuid4())
+                            q.add(Task(name=uuid_key, url='/avisomail', eta=TIME_ZONE.localize(eta)))
+                            memcache.set('mail_jornada_%s' % jornada.numero, uuid_key)
+
                     self.redirect('/admin/jornadas')
                     return
 
         self.redirect('/')
+
+class AvisoMail(webapp2.RequestHandler):
+    def post(self):
+        print '*' * 10
+        print 'Acabo de entrar en la tarea'
+        print '*' * 10
 
 class BorrarJornada(webapp2.RequestHandler):
     def get(self):
@@ -1758,6 +1786,7 @@ class CargarUefa(webapp2.RequestHandler):
                                 equipo.put()
 
 app = webapp2.WSGIApplication([
+    ('/avisomail', AvisoMail),
     ('/cargaruefa', CargarUefa),
     ('/cargarchampions', CargarChampions),
     ('/cargarjugadores', CargarJugadores),
