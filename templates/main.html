@@ -1,6 +1,22 @@
 {% extends "templates/base.html" %}
 {% block title %}Panel de control{% endblock %}
 
-{% block content %}
-  	
+{% block admin_content %}
+
+	<h1>Bienvenido, {{usuario.nick}}</h1>
+
+  {% if alerta_pronostico or alerta_goleadores %}
+  <div class="alert alert-danger" role="alert">
+  	<b>¡¡¡ATENCIÓN!!!</b>
+  	<br/>
+  	<ul>
+  		{% if alerta_pronostico %}
+  			<li>No has rellenado los <b>pronósticos</b> de la <a href="/pronosticos/nuevo?key={{prox_jornada.key()}}" class="alert-link">Jornada {{prox_jornada.numero}}</a>. Fecha límite para rellenar los pronósticos: <b>{{fecha_limite}}</b> </li>
+  		{% endif %}
+  		{% if alerta_goleadores %}
+  			<li>No has rellenado los <b>goleadores</b> de la <a href="/pronosticos/goleadores?key={{prox_jornada.key()}}" class="alert-link">Jornada {{prox_jornada.numero}}</a>. Fecha límite para rellenar los goleadores: <b>{{fecha_limite}}</b></li>
+  		{% endif %}
+  	</ul>
+  </div>
+  {% endif %}
 {% endblock %}

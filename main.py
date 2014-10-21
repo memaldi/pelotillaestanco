@@ -53,7 +53,41 @@ class MainHandler(webapp2.RequestHandler):
                 self.response.write(template.render(content))
                 return
 
-            content = {'usuario': usuario }
+            jornadas = Jornada.all()
+            jornadas.filter("fecha_inicio >", datetime.datetime.now(TIME_ZONE))
+            jornadas.order("fecha_inicio")
+            jornada = jornadas.get()
+
+            fecha_limite = jornada.fecha_inicio - datetime.timedelta(hours=FECHA_LIMITE)
+
+            if TIME_ZONE.localize(fecha_limite) > datetime.datetime.now(TIME_ZONE):
+
+                pronostico_jornada = PronosticoJornada.all()
+                pronostico_jornada.filter("jornada =", jornada)
+                pronostico_jornada.filter("usuario =", usuario)
+                pronostico_jornada = pronostico_jornada.get()
+
+                pronostico_partidos = PronosticoPartido.all()
+                pronostico_partidos.filter("pronostico_jornada =", pronostico_jornada)
+                pronostico_partidos = pronostico_partidos.count()
+
+                alerta_pronostico = False
+
+                if pronostico_partidos < 10:
+                    alerta_pronostico = True
+
+                pronostico_jugador = PronosticoJugador.all()
+                pronostico_jugador.filter("pronostico_jornada =", pronostico_jornada)
+                pronostico_jugador = pronostico_jugador.count()
+
+                alerta_goleadores = False
+
+                if pronostico_jugador < 3:
+                    alerta_goleadores = True
+
+                content = {'usuario': usuario, 'prox_jornada': jornada, 'fecha_limite':  fecha_limite, 'alerta_pronostico': alerta_pronostico, 'alerta_goleadores': alerta_goleadores}
+            else:
+                content = {'usuario': usuario, 'alerta_pronostico': False, 'alerta_goleadores': False}
             template = JINJA_ENVIRONMENT.get_template('templates/main.html')
             self.response.write(template.render(content))
             return
